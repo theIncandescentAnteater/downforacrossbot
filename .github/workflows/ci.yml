@@ -24,27 +24,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
       
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-      
-      - name: Install uv
+      - name: Install uv and set the Python version
         uses: astral-sh/setup-uv@v6
         with:
-          version: "latest"
+          python-version: ${{ matrix.python-version }}
           enable-cache: true
       
-      - name: Cache uv dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-
-      
       - name: Install dependencies
-        run: uv sync --frozen --dev
+        run: uv sync --locked --all-extras --dev
       
       - name: Run Ruff (linting)
         run: uv run ruff check --output-format github .
@@ -54,4 +41,16 @@ jobs:
       
       - name: Run type check
         run: uv run ty check --output-format github .
+  
+  build-docker:
+    name: Build and Push Docker Image (PR)
+    needs: lint-and-type-check
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      tags: |
+        type=ref,event=pr
+        type=sha
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
