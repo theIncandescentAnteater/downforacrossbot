@@ -65,7 +65,7 @@ async def startPuzzle(
             puzzleName = puzzle_utils.getPuzzleName(publisher)
 
         game = await puzzle_utils.makeGame(searchTerm=puzzleName)
-        if game == None:
+        if game is None:
             await interaction.response.send_message(
                 f"no puzzles found for {puzzleName}", ephemeral=True
             )

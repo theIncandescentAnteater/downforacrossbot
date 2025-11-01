@@ -56,7 +56,7 @@ async def makeGame(
     results = await getResults(
         resultsPage, pageSize, searchTerm, standardSize, miniSize
     )
-    if results == None:
+    if results is None:
         return None
     puzzleID = await getPuzzleID(results)
     gameID = await getGID()
@@ -66,7 +66,7 @@ async def makeGame(
 
 def getPuzzleName(publisher, date=None):
     """returns standard name format of puzzles by a publisher on a given day"""
-    if date == None:
+    if date is None:
         date = datetime.date.today()
     match publisher:
         case "nyt":
