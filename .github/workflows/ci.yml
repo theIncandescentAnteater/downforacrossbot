@@ -6,10 +6,16 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   lint-and-type-check:
     name: Lint and Type Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         python-version: ['3.14']
@@ -27,6 +33,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           version: "latest"
+          enable-cache: true
       
       - name: Cache uv dependencies
         uses: actions/cache@v4
@@ -57,6 +64,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     
     env:
       REGISTRY: ghcr.io
@@ -75,6 +83,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
       
       - name: Extract metadata
         id: meta
@@ -103,5 +112,5 @@ jobs:
           TAGS="${{ steps.meta.outputs.tags }}"
           IMAGE=$(echo $TAGS | cut -d',' -f1)
           echo "Testing built image: $IMAGE"
-          docker run --rm --entrypoint sh $IMAGE -c "python --version && uv --version && ls -la /app/*.py"
+          docker run --rm --pull=never --entrypoint sh $IMAGE -c "python --version && uv --version && ls -la /app/*.py"
 
