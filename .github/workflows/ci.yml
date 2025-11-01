@@ -51,6 +51,4 @@ jobs:
       tags: |
         type=ref,event=pr
         type=sha
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
