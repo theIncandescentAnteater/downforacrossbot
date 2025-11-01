@@ -1,4 +1,3 @@
-# Use official uv Docker image with Python (Alpine for smaller size)
 FROM ghcr.io/astral-sh/uv:python3.14-alpine AS builder
 
 # Set environment variables
@@ -41,7 +40,7 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 
 # Copy application code
-COPY --chown=appuser:appuser main.py puzzle_utils.py webserver.py settings.py ./
+COPY --chown=appuser:appuser main.py puzzle_utils.py webserver.py ./
 
 # Switch to non-root user
 USER appuser

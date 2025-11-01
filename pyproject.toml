@@ -4,13 +4,10 @@ version = "0.1.0"
 description = "Discord bot that sends downforacross crossword puzzle links"
 requires-python = ">=3.14"
 dependencies = [
-    "discord-py",
+    "discord.py",
     "python-dotenv",
-    "httpx",
-    "fastapi",
-    "uvicorn[standard]",
-    "pynacl",
-    "pydantic-settings",
+    "requests",
+    "Flask",
 ]
 
 [dependency-groups]
