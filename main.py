@@ -16,7 +16,10 @@ import puzzle_utils
 
 class Client(commands.Bot):
     async def on_ready(self):
-        print(f"Ready to puzzle with {self.user.name}")
+        if self.user is not None:
+            print(f"Ready to puzzle with {self.user.name}")
+        else:
+            print("Ready to puzzle")
 
         try:
             await self.tree.sync()
@@ -38,6 +41,9 @@ client = Client(
 # pull values from .env
 load_dotenv()
 token = os.getenv("DISCORD_TOKEN")
+
+if token is None:
+    raise ValueError("DISCORD_TOKEN environment variable is not set")
 
 
 @client.tree.command(name="puzzle", description="start a puzzle")
