@@ -41,7 +41,7 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 
 # Copy application code
-COPY --chown=appuser:appuser main.py puzzle_utils.py webserver.py ./
+COPY --chown=appuser:appuser main.py puzzle_utils.py webserver.py settings.py ./
 
 # Switch to non-root user
 USER appuser

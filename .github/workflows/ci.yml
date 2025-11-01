@@ -108,9 +108,9 @@ jobs:
       
       - name: Test Docker image
         run: |
-          # Get the first tag from the comma-separated list
+          # Get the first tag from the newline-separated list
           TAGS="${{ steps.meta.outputs.tags }}"
-          IMAGE=$(echo $TAGS | cut -d',' -f1)
+          IMAGE=$(echo "$TAGS" | head -n1)
           echo "Testing built image: $IMAGE"
           docker run --rm --pull=never --entrypoint sh $IMAGE -c "python --version && uv --version && ls -la /app/*.py"
 
