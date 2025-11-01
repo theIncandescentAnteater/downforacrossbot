@@ -114,4 +114,16 @@ jobs:
           echo "Testing pushed image: $IMAGE"
           docker pull $IMAGE
           docker run --rm --entrypoint sh $IMAGE -c "python --version && uv --version && ls -la /app/*.py"
+      
+      - name: Sign image with cosign
+        uses: sigstore/cosign-installer@v3
+      
+      - name: Sign container image
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          # Sign using digest for better security
+          IMAGE_WITH_DIGEST="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${DIGEST}"
+          echo "Signing image by digest: $IMAGE_WITH_DIGEST"
+          cosign sign --yes "$IMAGE_WITH_DIGEST"
 

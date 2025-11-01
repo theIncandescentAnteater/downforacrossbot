@@ -76,4 +76,18 @@ jobs:
       - name: Image digest
         run: |
           echo "Image digest: ${{ steps.build.outputs.digest }}"
+      
+      - name: Sign image with cosign
+        uses: sigstore/cosign-installer@v3
+      
+      - name: Sign container image
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          # Sign using digest for better security
+          # All tags pointing to this digest will be covered by the signature
+          IMAGE_WITH_DIGEST="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${DIGEST}"
+          echo "Signing image by digest: $IMAGE_WITH_DIGEST"
+          cosign sign --yes "$IMAGE_WITH_DIGEST"
 
