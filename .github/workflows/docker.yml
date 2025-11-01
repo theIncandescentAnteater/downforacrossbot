@@ -80,14 +80,16 @@ jobs:
       - name: Sign image with cosign
         uses: sigstore/cosign-installer@v3
       
-      - name: Sign container image
+      - name: Sign container images
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build.outputs.digest }}
         run: |
-          # Sign using digest for better security
-          # All tags pointing to this digest will be covered by the signature
-          IMAGE_WITH_DIGEST="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${DIGEST}"
-          echo "Signing image by digest: $IMAGE_WITH_DIGEST"
-          cosign sign --yes "$IMAGE_WITH_DIGEST"
+          # Sign each tag for multi-platform images
+          # Cosign handles multi-arch manifests when signing by tag
+          echo "$TAGS" | while read -r tag; do
+            if [ -n "$tag" ]; then
+              echo "Signing image: $tag"
+              cosign sign --yes "$tag"
+            fi
+          done
 
