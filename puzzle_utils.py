@@ -1,77 +1,157 @@
-import datetime # for puzzles by date
-import requests # for api calls
+import datetime  # for puzzles by date
+import httpx  # for async api calls
+import logging
+from typing import Optional
 
 
-async def getResults(resultsPage = 0, pageSize = 50, searchTerm = "", standardSize = "true", miniSize = "true"):
-    """return json results of list of puzzles from d4a given search criteria"""
+logger = logging.getLogger(__name__)
 
-    response = requests.get(f"https://api.foracross.com/api/puzzle_list?"
-                            f"page={resultsPage}&"
-                            f"pageSize={pageSize}&"
-                            f"filter%5BnameOrTitleFilter%5D={searchTerm}&"
-                            f"filter%5BsizeFilter%5D%5BMini%5D={miniSize}&"
-                            f"filter%5BsizeFilter%5D%5BStandard%5D={standardSize}"
-                            ) 
-    responseJson = response.json()
-    if len(responseJson["puzzles"]) == 0:
-        print(f"oops, no results found for {searchTerm}")
-        return None
-    return responseJson
+# Configuration constants
+DEFAULT_PAGE_SIZE = 50
+DEFAULT_RESULTS_PAGE = 0
+REQUEST_TIMEOUT = 10.0  # seconds
+API_BASE_URL = "https://api.foracross.com"
 
-async def getPuzzleID(results, index = 0):
-    """returns pid from first puzzle in json results"""
+
+async def getResults(
+    resultsPage: int = DEFAULT_RESULTS_PAGE,
+    pageSize: int = DEFAULT_PAGE_SIZE,
+    searchTerm: str = "",
+    standardSize: str = "true",
+    miniSize: str = "true",
+) -> Optional[dict]:
+    """Return json results of list of puzzles from d4a given search criteria."""
+    params = {
+        "page": resultsPage,
+        "pageSize": pageSize,
+        "filter[nameOrTitleFilter]": searchTerm,
+        "filter[sizeFilter][Mini]": miniSize,
+        "filter[sizeFilter][Standard]": standardSize,
+    }
+
+    url = f"{API_BASE_URL}/api/puzzle_list"
+
     try:
+        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+            response = await client.get(url, params=params)
+            response.raise_for_status()  # Raise exception for bad status codes
+            response_json = response.json()
+
+            if not response_json.get("puzzles"):
+                logger.warning(f"No results found for search term: {searchTerm}")
+                return None
+            return response_json
+    except httpx.HTTPStatusError as e:
+        logger.error(
+            f"HTTP error getting puzzle results: {e.response.status_code} - {e.response.text}"
+        )
+        raise
+    except httpx.RequestError as e:
+        logger.error(f"Request error getting puzzle results: {e}")
+        raise
+
+
+async def getPuzzleID(results: dict, index: int = 0) -> str:
+    """Return pid from puzzle in json results at given index."""
+    try:
+        if not results or "puzzles" not in results:
+            raise ValueError("Invalid results structure: missing 'puzzles' key")
+        if index >= len(results["puzzles"]):
+            raise IndexError(f"Puzzle index {index} out of range")
         return results["puzzles"][index]["pid"]
+    except (KeyError, IndexError, ValueError) as e:
+        logger.error(f"Error getting puzzle ID: {e}", exc_info=True)
+        raise
 
-    except Exception as e:
-        print(f"Error getting results: {e}")
 
-async def getGID():
-    """get gid from d4a api counter"""
-    gidCounter = requests.post("https://api.foracross.com/api/counters/gid")
-    gidCounterJson = gidCounter.json()
-    return gidCounterJson["gid"]
+async def getGID() -> str:
+    """Get gid from d4a api counter."""
+    url = f"{API_BASE_URL}/api/counters/gid"
 
-async def createGame(pid, gid):
-    """create game instance in d4a database"""
-    data = {"gid":gid, "pid":pid}
-    requests.post("https://api.foracross.com/api/game", json=data)
+    try:
+        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+            response = await client.post(url)
+            response.raise_for_status()
+            gid_counter_json = response.json()
+            return gid_counter_json["gid"]
+    except httpx.HTTPStatusError as e:
+        logger.error(
+            f"HTTP error getting GID: {e.response.status_code} - {e.response.text}"
+        )
+        raise
+    except httpx.RequestError as e:
+        logger.error(f"Request error getting GID: {e}")
+        raise
+    except KeyError as e:
+        logger.error(f"Invalid response format from GID endpoint: {e}")
+        raise ValueError("Response missing 'gid' field") from e
 
-def getGameURL(gid):
-    """append gid to url template for game instance url"""
+
+async def createGame(pid: str, gid: str) -> None:
+    """Create game instance in d4a database."""
+    url = f"{API_BASE_URL}/api/game"
+    data = {"gid": gid, "pid": pid}
+
+    try:
+        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+            response = await client.post(url, json=data)
+            response.raise_for_status()
+            logger.debug(f"Created game with gid={gid}, pid={pid}")
+    except httpx.HTTPStatusError as e:
+        logger.error(
+            f"HTTP error creating game: {e.response.status_code} - {e.response.text}"
+        )
+        raise
+    except httpx.RequestError as e:
+        logger.error(f"Request error creating game: {e}")
+        raise
+
+
+def getGameURL(gid: str) -> str:
+    """Return game instance URL for given gid."""
     return f"https://downforacross.com/beta/game/{gid}"
 
-async def makeGame(resultsPage = 0, pageSize = 50, searchTerm = "", standardSize = "true", miniSize = "true"):
-    """returns url of a new game instance for a d4a puzzle given search criteria"""
-    results = await getResults(resultsPage, pageSize, searchTerm, standardSize, miniSize)
-    if results == None:
-        return None
-    puzzleID = await getPuzzleID(results)
-    gameID = await getGID()
-    await createGame(puzzleID, gameID)
-    return getGameURL(gameID)
 
-def getPuzzleName(publisher, date=None):
-    """returns standard name format of puzzles by a publisher on a given day"""
-    if date == None:
+async def makeGame(
+    resultsPage: int = DEFAULT_RESULTS_PAGE,
+    pageSize: int = DEFAULT_PAGE_SIZE,
+    searchTerm: str = "",
+    standardSize: str = "true",
+    miniSize: str = "true",
+) -> Optional[str]:
+    """Return URL of a new game instance for a d4a puzzle given search criteria."""
+    results = await getResults(
+        resultsPage, pageSize, searchTerm, standardSize, miniSize
+    )
+    if results is None:
+        return None
+
+    puzzle_id = await getPuzzleID(results)
+    game_id = await getGID()
+    await createGame(puzzle_id, game_id)
+    return getGameURL(game_id)
+
+
+def getPuzzleName(publisher: str, date: Optional[datetime.date] = None) -> str:
+    """Return standard name format of puzzles by a publisher on a given day."""
+    if date is None:
         date = datetime.date.today()
+
     match publisher:
         case "nyt":
             return date.strftime(f"NY Times, %A, %B {date.day}, %Y")
         case "lat":
             return date.strftime(f"LA Times, %a, %b {date.day}, %Y")
-            # return date.strftime(f"L. A. Times, %a, %b {date.day}, %Y")
         case "usa":
-            return date.strftime(f"USA Today %A, %b %d, %Y")
+            return date.strftime("USA Today %A, %b %d, %Y")
         case "wsj":
-            return date.strftime(f"WSJ %A, %b %d, %Y")
+            return date.strftime("WSJ %A, %b %d, %Y")
         case "newsday":
-            return date.strftime(f"Newsday %A, %b %d, %Y")
+            return date.strftime("Newsday %A, %b %d, %Y")
         case "universal":
-            return date.strftime(f"Universal Crossword %A")
+            return date.strftime("Universal Crossword %A")
         case "atlantic":
-            return date.strftime(f"Atlantic %A, %b %d, %Y")
+            return date.strftime("Atlantic %A, %b %d, %Y")
         case _:
-            print(f"error for publisher {publisher}")
-            return ""
-    
+            logger.error(f"Unknown publisher: {publisher}")
+            raise ValueError(f"Unknown publisher: {publisher}")
