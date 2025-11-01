@@ -94,12 +94,12 @@ jobs:
             type=ref,event=pr
             type=sha
       
-      - name: Build Docker image
+      - name: Build and push Docker image
         id: build
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: false
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -111,6 +111,7 @@ jobs:
           # Get the first tag from the newline-separated list
           TAGS="${{ steps.meta.outputs.tags }}"
           IMAGE=$(echo "$TAGS" | head -n1)
-          echo "Testing built image: $IMAGE"
-          docker run --rm --pull=never --entrypoint sh $IMAGE -c "python --version && uv --version && ls -la /app/*.py"
+          echo "Testing pushed image: $IMAGE"
+          docker pull $IMAGE
+          docker run --rm --entrypoint sh $IMAGE -c "python --version && uv --version && ls -la /app/*.py"
 
