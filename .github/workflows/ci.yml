@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: read
+  packages: write
+  id-token: write
+
+jobs:
+  lint-and-type-check:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        python-version: ['3.14']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+      
+      - name: Run Ruff (linting)
+        run: uv run ruff check --output-format github .
+      
+      - name: Run Ruff (format check)
+        run: uv run ruff format --output-format github --check .
+      
+      - name: Run type check
+        run: uv run ty check --output-format github .
+  
+  build-docker:
+    name: Build and Push Docker Image (PR)
+    needs: lint-and-type-check
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      tags: |
+        type=ref,event=pr
+        type=sha
+

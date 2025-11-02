@@ -5,9 +5,43 @@ discord bot that sends downforacross crossword puzzle links :)
 - puzzle (publisher, date [optional])
 
 ## To Run Locally
+
+### Install Dependencies
+Install dependencies using `uv`:
+```bash
+uv sync
+```
+
 ### .env file 
 Containing:
 - `DISCORD_TOKEN`, the bot token
+
+### Run the Bot
+```bash
+uv run python main.py
+```
+
+## Running with Docker
+
+### Build the Image
+```bash
+docker build -t downforacrossbot .
+```
+
+### Run the Container
+Pass the Discord token as an environment variable:
+```bash
+docker run -p 8080:8080 -e DISCORD_TOKEN=your_token_here downforacrossbot
+```
+
+Or use an environment file:
+```bash
+docker run -p 8080:8080 --env-file .env downforacrossbot
+```
+
+The container runs both the FastAPI web server (on port 8080) and the Discord bot. The FastAPI server provides:
+- Root endpoint: `http://localhost:8080/` - Status check
+- Health endpoint: `http://localhost:8080/health` - Health check for monitoring
 
 ### OAuth2 Settings
 Scopes:
