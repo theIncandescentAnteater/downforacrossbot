@@ -52,8 +52,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: ${{ inputs.tags }}
-          flavor: |
-            lowercase=true
       
       - name: Build and push Docker image
         id: build
@@ -69,10 +67,11 @@ jobs:
       
       - name: Test pushed image
         run: |
-          # Tags from metadata-action are already lowercase due to flavor
+          # docker/metadata-action automatically lowercases image names
           # Use provided test tag or first tag from metadata
           if [ -n "${{ inputs.test-image-tag }}" ]; then
-            # Lowercase the image name to match what was pushed
+            # Tags from metadata-action are already lowercase, but we need to construct the full name
+            # Lowercase the repository name to match what was pushed
             IMAGE_LOWER=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.test-image-tag }}" | tr '[:upper:]' '[:lower:]')
             IMAGE="$IMAGE_LOWER"
           else
