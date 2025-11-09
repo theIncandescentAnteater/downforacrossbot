@@ -1,6 +1,8 @@
 import datetime  # for puzzles by date
 import requests  # for api calls
 
+API_URL = 'downforacross-com.onrender.com'
+SITE_URL = 'crosswithfriends.com'
 
 async def getResults(
     resultsPage=0, pageSize=50, searchTerm="", standardSize="true", miniSize="true"
@@ -8,7 +10,7 @@ async def getResults(
     """return json results of list of puzzles from d4a given search criteria"""
 
     response = requests.get(
-        f"https://api.foracross.com/api/puzzle_list?"
+        f"https://{API_URL}/api/puzzle_list?"
         f"page={resultsPage}&"
         f"pageSize={pageSize}&"
         f"filter%5BnameOrTitleFilter%5D={searchTerm}&"
@@ -33,7 +35,7 @@ async def getPuzzleID(results, index=0):
 
 async def getGID():
     """get gid from d4a api counter"""
-    gidCounter = requests.post("https://api.foracross.com/api/counters/gid")
+    gidCounter = requests.post(f"https://{API_URL}/api/counters/gid")
     gidCounterJson = gidCounter.json()
     return gidCounterJson["gid"]
 
@@ -41,12 +43,12 @@ async def getGID():
 async def createGame(pid, gid):
     """create game instance in d4a database"""
     data = {"gid": gid, "pid": pid}
-    requests.post("https://api.foracross.com/api/game", json=data)
+    requests.post(f"https://{API_URL}/api/game", json=data)
 
 
 def getGameURL(gid):
     """append gid to url template for game instance url"""
-    return f"https://crosswithfriends.com/beta/game/{gid}"
+    return f"https://{SITE_URL}/beta/game/{gid}"
 
 
 async def makeGame(
