@@ -67,7 +67,8 @@ async def startPuzzle(
                 puzzleName = puzzle_utils.getPuzzleName(publisher, date)
         except Exception as e:
             await interaction.response.send_message(
-                    f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want", ephemeral=True
+                f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want",
+                ephemeral=True,
             )
             print(f"Error getting results: {e}")
             return
