@@ -1,8 +1,9 @@
 import datetime  # for puzzles by date
 import requests  # for api calls
 
-API_URL = 'downforacross-com.onrender.com'
-SITE_URL = 'crosswithfriends.com'
+API_URL = "downforacross-com.onrender.com"
+SITE_URL = "crosswithfriends.com"
+
 
 async def getResults(
     resultsPage=0, pageSize=50, searchTerm="", standardSize="true", miniSize="true"
