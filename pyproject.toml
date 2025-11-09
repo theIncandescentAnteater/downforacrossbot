@@ -8,6 +8,7 @@ dependencies = [
     "python-dotenv",
     "requests",
     "Flask",
+    "python-dateutil>=2.9.0.post0",
 ]
 
 [dependency-groups]

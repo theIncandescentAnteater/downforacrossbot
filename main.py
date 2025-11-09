@@ -7,9 +7,9 @@ import os
 
 import webserver  # for hosting
 
-import datetime  # for puzzles by date
+from dateutil import parser  # for puzzles by date
+from datetime import datetime, timedelta
 from typing import Literal  # for autocomplete
-import re  # for date format checking
 
 import puzzle_utils
 
@@ -49,7 +49,7 @@ if token is None:
 @client.tree.command(name="puzzle", description="start a puzzle")
 @app_commands.describe(
     publisher="where the puzzle came from",
-    date="date on which the puzzle was published (m/d or m/d/yyyy)",
+    date="date on which the puzzle was published (m/d or day of the week)",
 )
 async def startPuzzle(
     interaction: discord.Interaction,
@@ -57,24 +57,30 @@ async def startPuzzle(
     date: str = "",
 ):
     try:
-        dateFormat = re.compile(r"^[0-1]?\d\/[0-3]?\d(\/[1-2]\d\d\d)?$")
-
-        if dateFormat.match(date):
-            dateParts = date.split("/")
-            year = (
-                datetime.date.today().year if len(dateParts) == 2 else int(dateParts[2])
+        try:
+            if not date:
+                puzzleName = puzzle_utils.getPuzzleName(publisher)
+            else:
+                date = parser.parse(date)
+                if date > datetime.today():
+                    date = date - timedelta(days=7)
+                puzzleName = puzzle_utils.getPuzzleName(publisher, date)
+        except:
+            await interaction.response.send_message(
+                    f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want", ephemeral=True
             )
-
-            puzzleDate = datetime.date(year, int(dateParts[0]), int(dateParts[1]))
-            puzzleName = puzzle_utils.getPuzzleName(publisher, puzzleDate)
-        else:
-            puzzleName = puzzle_utils.getPuzzleName(publisher)
+            return
 
         game = await puzzle_utils.makeGame(searchTerm=puzzleName)
         if game is None:
-            await interaction.response.send_message(
-                f"no puzzles found for {puzzleName}", ephemeral=True
-            )
+            if date and date > datetime.today():
+                await interaction.response.send_message(
+                    "no puzzles found for the future!", ephemeral=True
+                )
+            else:
+                await interaction.response.send_message(
+                    f"no puzzles found for {puzzleName}", ephemeral=True
+                )
         else:
             await interaction.response.send_message(game)
 
