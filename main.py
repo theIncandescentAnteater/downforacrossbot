@@ -65,7 +65,7 @@ async def startPuzzle(
                 if date > datetime.today():
                     date = date - timedelta(days=7)
                 puzzleName = puzzle_utils.getPuzzleName(publisher, date)
-        except:
+        except Exception as e:
             await interaction.response.send_message(
                     f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want", ephemeral=True
             )
