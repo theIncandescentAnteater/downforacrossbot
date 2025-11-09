@@ -1,5 +1,5 @@
-# DownForAcross Discord Bot
-discord bot that sends downforacross crossword puzzle links :)
+# CrossWithFriends Discord Bot
+discord bot that sends crosswithfriends crossword puzzle links :)
 
 ## Commands
 - puzzle (publisher, date [optional])

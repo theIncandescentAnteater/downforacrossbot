@@ -46,7 +46,7 @@ async def createGame(pid, gid):
 
 def getGameURL(gid):
     """append gid to url template for game instance url"""
-    return f"https://downforacross.com/beta/game/{gid}"
+    return f"https://crosswithfriends.com/beta/game/{gid}"
 
 
 async def makeGame(
