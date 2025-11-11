@@ -58,13 +58,17 @@ async def startPuzzle(
 ):
     try:
         try:
+            # if you don't input a date, get today's puzzle
             if not date:
                 puzzleName = puzzle_utils.getPuzzleName(publisher)
             else:
+                # if the date is in the future, subtract a week
+                # when a day of the week is entered, the parser chooses the next instance, rather than the last. this undoes that.
                 date = parser.parse(date)
                 if date > datetime.today():
                     date = date - timedelta(days=7)
                 puzzleName = puzzle_utils.getPuzzleName(publisher, date)
+        # something went wrong with the date parsing
         except Exception as e:
             await interaction.response.send_message(
                 f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want",
@@ -73,8 +77,10 @@ async def startPuzzle(
             print(f"Error getting results: {e}")
             return
 
-        game = await puzzle_utils.makeGame(searchTerm=puzzleName)
-        if game is None:
+        puzzleInfo = await puzzle_utils.getPuzzleInfo(searchTerm=puzzleName)
+
+        # no games found
+        if puzzleInfo is None:
             if date and date > datetime.today():
                 await interaction.response.send_message(
                     "no puzzles found for the future!", ephemeral=True
@@ -84,7 +90,22 @@ async def startPuzzle(
                     f"no puzzles found for {puzzleName}", ephemeral=True
                 )
         else:
-            await interaction.response.send_message(game)
+            game = await puzzle_utils.makeGame(puzzleInfo)
+
+            # create embed
+            puzzleEmbed = discord.Embed(
+                title=puzzleInfo["content"]["info"]["title"],
+                url=game,
+                color=discord.Color.from_str("#78a6ee"),
+                description=puzzleInfo["content"]["info"]["author"],
+            )
+            if puzzleInfo["content"]["info"]["description"]:
+                puzzleEmbed.set_footer(
+                    text=puzzleInfo["content"]["info"]["description"]
+                )
+
+            # send embed
+            await interaction.response.send_message(embed=puzzleEmbed)
 
     except Exception as e:
         print(f"Error getting results: {e}")

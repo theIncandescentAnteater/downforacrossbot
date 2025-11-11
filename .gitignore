@@ -1,5 +1,5 @@
 .env
 discord.log*
-.vscode/settings.json
+.vscode/*
 __pycache__
 /assets

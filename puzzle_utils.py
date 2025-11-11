@@ -8,7 +8,7 @@ SITE_URL = "crosswithfriends.com"
 async def getResults(
     resultsPage=0, pageSize=50, searchTerm="", standardSize="true", miniSize="true"
 ):
-    """return json results of list of puzzles from d4a given search criteria"""
+    """return json results of list of puzzles from cwf given search criteria"""
 
     response = requests.get(
         f"https://{API_URL}/api/puzzle_list?"
@@ -28,21 +28,21 @@ async def getResults(
 async def getPuzzleID(results, index=0):
     """returns pid from first puzzle in json results"""
     try:
-        return results["puzzles"][index]["pid"]
+        return results["pid"]
 
     except Exception as e:
         print(f"Error getting results: {e}")
 
 
 async def getGID():
-    """get gid from d4a api counter"""
+    """get gid from cwf api counter"""
     gidCounter = requests.post(f"https://{API_URL}/api/counters/gid")
     gidCounterJson = gidCounter.json()
     return gidCounterJson["gid"]
 
 
 async def createGame(pid, gid):
-    """create game instance in d4a database"""
+    """create game instance in cwf database"""
     data = {"gid": gid, "pid": pid}
     requests.post(f"https://{API_URL}/api/game", json=data)
 
@@ -52,16 +52,21 @@ def getGameURL(gid):
     return f"https://{SITE_URL}/beta/game/{gid}"
 
 
-async def makeGame(
+async def getPuzzleInfo(
     resultsPage=0, pageSize=50, searchTerm="", standardSize="true", miniSize="true"
 ):
-    """returns url of a new game instance for a d4a puzzle given search criteria"""
+    """returns json results for search criteria"""
     results = await getResults(
         resultsPage, pageSize, searchTerm, standardSize, miniSize
     )
     if results is None:
         return None
-    puzzleID = await getPuzzleID(results)
+    return results["puzzles"][0]
+
+
+async def makeGame(jsonPuzzles: dict):
+    """returns url of a new game instance for a cwf puzzle given json of puzzles"""
+    puzzleID = await getPuzzleID(jsonPuzzles)
     gameID = await getGID()
     await createGame(puzzleID, gameID)
     return getGameURL(gameID)
