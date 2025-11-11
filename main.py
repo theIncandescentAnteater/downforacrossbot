@@ -92,15 +92,18 @@ async def startPuzzle(
         else:
             game = await puzzle_utils.makeGame(puzzleInfo)
 
-            # send the puzzle!
-            await interaction.response.send_message(
-                embed=discord.Embed(
-                    title=puzzleName,
-                    url=game,
-                    color=discord.Color.from_str("#78a6ee"),
-                    # description="Will Shortz, probably"\
-                )
+            # create embed
+            puzzleEmbed = discord.Embed(
+                title=puzzleInfo["content"]["info"]["title"],
+                url=game,
+                color=discord.Color.from_str("#78a6ee"),
+                description=puzzleInfo["content"]["info"]["author"],
             )
+            if puzzleInfo["content"]["info"]["description"]:
+                puzzleEmbed.set_footer(text=puzzleInfo["content"]["info"]["description"])
+
+            # send embed
+            await interaction.response.send_message(embed=puzzleEmbed)
 
     except Exception as e:
         print(f"Error getting results: {e}")
