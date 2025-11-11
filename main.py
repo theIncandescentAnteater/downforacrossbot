@@ -58,13 +58,17 @@ async def startPuzzle(
 ):
     try:
         try:
+            # if you don't input a date, get today's puzzle
             if not date:
                 puzzleName = puzzle_utils.getPuzzleName(publisher)
             else:
+                # if the date is in the future, subtract a week
+                # when a day of the week is entered, the parser chooses the next instance, rather than the last. this undoes that.
                 date = parser.parse(date)
                 if date > datetime.today():
                     date = date - timedelta(days=7)
                 puzzleName = puzzle_utils.getPuzzleName(publisher, date)
+        # something went wrong with the date parsing
         except Exception as e:
             await interaction.response.send_message(
                 f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want",
@@ -74,6 +78,8 @@ async def startPuzzle(
             return
 
         game = await puzzle_utils.makeGame(searchTerm=puzzleName)
+        
+        # no games found
         if game is None:
             if date and date > datetime.today():
                 await interaction.response.send_message(
@@ -84,85 +90,13 @@ async def startPuzzle(
                     f"no puzzles found for {puzzleName}", ephemeral=True
                 )
         else:
-            await interaction.response.send_message(game)
-
-    except Exception as e:
-        print(f"Error getting results: {e}")
-
-
-@client.tree.command(name="puzzleembed", description="start a puzzle")
-async def startPuzzleEmbed(
-    interaction: discord.Interaction,
-    publisher: Literal["nyt", "lat", "usa", "wsj", "newsday", "universal", "atlantic"],
-    date: str = "",
-):
-    try:
-        dateFormat = re.compile(r"^[0-1]?\d/[0-3]?\d(/[1-2]\d\d\d)?$")
-
-        if dateFormat.match(date):
-            dateParts = date.split("/")
-            year = (
-                datetime.date.today().year if len(dateParts) == 2 else int(dateParts[2])
-            )
-
-            puzzleDate = datetime.date(year, int(dateParts[0]), int(dateParts[1]))
-            puzzleName = puzzle_utils.getPuzzleName(publisher, puzzleDate)
-        else:
-            puzzleName = puzzle_utils.getPuzzleName(publisher)
-
-        game = await puzzle_utils.makeGame(searchTerm=puzzleName)
-        if game == None:
-            await interaction.response.send_message(
-                f"no puzzles found for {puzzleName}", ephemeral=True
-            )
-        else:
-            # puzzleRole = discord.utils.get(interaction.guild.roles, name=puzzleRoleName)
+            # send the puzzle!
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=puzzleName,
                     url=game,
-                    color=discord.Color.from_str("#78a6ee"),
-                    # , description=f"<@&{puzzleRole.id}>"\
-                )
-            )
-
-    except Exception as e:
-        print(f"Error getting results: {e}")
-
-
-@client.tree.command(name="puzzleembed", description="start a puzzle")
-async def startPuzzleEmbed(
-    interaction: discord.Interaction,
-    publisher: Literal["nyt", "lat", "usa", "wsj", "newsday", "universal", "atlantic"],
-    date: str = "",
-):
-    try:
-        dateFormat = re.compile(r"^[0-1]?\d/[0-3]?\d(/[1-2]\d\d\d)?$")
-
-        if dateFormat.match(date):
-            dateParts = date.split("/")
-            year = (
-                datetime.date.today().year if len(dateParts) == 2 else int(dateParts[2])
-            )
-
-            puzzleDate = datetime.date(year, int(dateParts[0]), int(dateParts[1]))
-            puzzleName = puzzle_utils.getPuzzleName(publisher, puzzleDate)
-        else:
-            puzzleName = puzzle_utils.getPuzzleName(publisher)
-
-        game = await puzzle_utils.makeGame(searchTerm=puzzleName)
-        if game == None:
-            await interaction.response.send_message(
-                f"no puzzles found for {puzzleName}", ephemeral=True
-            )
-        else:
-            # puzzleRole = discord.utils.get(interaction.guild.roles, name=puzzleRoleName)
-            await interaction.response.send_message(
-                embed=discord.Embed(
-                    title=puzzleName,
-                    url=game,
-                    color=discord.Color.from_str("#78a6ee"),
-                    # , description=f"<@&{puzzleRole.id}>"\
+                    color=discord.Color.from_str("#78a6ee")
+                    # description="Will Shortz, probably"\
                 )
             )
 
