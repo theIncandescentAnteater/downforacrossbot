@@ -77,10 +77,10 @@ async def startPuzzle(
             print(f"Error getting results: {e}")
             return
 
-        game = await puzzle_utils.makeGame(searchTerm=puzzleName)
-        
+        puzzleInfo = await puzzle_utils.getPuzzleInfo(searchTerm=puzzleName)
+
         # no games found
-        if game is None:
+        if puzzleInfo is None:
             if date and date > datetime.today():
                 await interaction.response.send_message(
                     "no puzzles found for the future!", ephemeral=True
@@ -90,12 +90,14 @@ async def startPuzzle(
                     f"no puzzles found for {puzzleName}", ephemeral=True
                 )
         else:
+            game = await puzzle_utils.makeGame(puzzleInfo)
+
             # send the puzzle!
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=puzzleName,
                     url=game,
-                    color=discord.Color.from_str("#78a6ee")
+                    color=discord.Color.from_str("#78a6ee"),
                     # description="Will Shortz, probably"\
                 )
             )

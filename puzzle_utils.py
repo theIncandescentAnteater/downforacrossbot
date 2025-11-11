@@ -28,7 +28,7 @@ async def getResults(
 async def getPuzzleID(results, index=0):
     """returns pid from first puzzle in json results"""
     try:
-        return results["puzzles"][index]["pid"]
+        return results["pid"]
 
     except Exception as e:
         print(f"Error getting results: {e}")
@@ -52,16 +52,21 @@ def getGameURL(gid):
     return f"https://{SITE_URL}/beta/game/{gid}"
 
 
-async def makeGame(
+async def getPuzzleInfo(
     resultsPage=0, pageSize=50, searchTerm="", standardSize="true", miniSize="true"
 ):
-    """returns url of a new game instance for a cwf puzzle given search criteria"""
+    """returns json results for search criteria"""
     results = await getResults(
         resultsPage, pageSize, searchTerm, standardSize, miniSize
     )
     if results is None:
         return None
-    puzzleID = await getPuzzleID(results)
+    return results["puzzles"][0]
+
+
+async def makeGame(jsonPuzzles: dict):
+    """returns url of a new game instance for a cwf puzzle given json of puzzles"""
+    puzzleID = await getPuzzleID(jsonPuzzles)
     gameID = await getGID()
     await createGame(puzzleID, gameID)
     return getGameURL(gameID)
