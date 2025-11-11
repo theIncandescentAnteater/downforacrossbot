@@ -100,7 +100,9 @@ async def startPuzzle(
                 description=puzzleInfo["content"]["info"]["author"],
             )
             if puzzleInfo["content"]["info"]["description"]:
-                puzzleEmbed.set_footer(text=puzzleInfo["content"]["info"]["description"])
+                puzzleEmbed.set_footer(
+                    text=puzzleInfo["content"]["info"]["description"]
+                )
 
             # send embed
             await interaction.response.send_message(embed=puzzleEmbed)
