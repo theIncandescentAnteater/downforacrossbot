@@ -111,5 +111,36 @@ async def startPuzzle(
         print(f"Error getting results: {e}")
 
 
+@client.event
+async def on_reaction_add(reaction, user):
+    if str(reaction) == "✅":
+        channel = reaction.message.channel
+
+        # create embed
+        puzzleEmbed = discord.Embed(description="congrats! 🎉 play another?")
+
+        await channel.send(embed=puzzleEmbed, view=publisherButtons())
+
+
+class publisherButtons(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    #TODO make this cleaner. discord.ui.Select?
+
+    @discord.ui.button(label='nyt', style=discord.ButtonStyle.grey)
+    async def nyt_button(self, interaction, button):
+        #TODO send actual puzzle (get date of original puzzle?)
+        await interaction.response.send_message('Hello!')
+
+    @discord.ui.button(label='lat', style=discord.ButtonStyle.grey)
+    async def lat_button(self, interaction, button):
+        await interaction.response.send_message('Hello!')
+
+    @discord.ui.button(label='usa', style=discord.ButtonStyle.grey)
+    async def usa_button(self, interaction, button):
+        await interaction.response.send_message('Hello!')
+
+
 webserver.keep_alive()
 client.run(token, log_handler=handler, log_level=logging.DEBUG)
