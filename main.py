@@ -62,7 +62,7 @@ async def on_reaction_add(reaction, user):
         channel = reaction.message.channel
 
         # create embed
-        puzzleEmbed = discord.Embed(description="congrats! 🎉 play another?")
+        puzzleEmbed = discord.Embed(description="congrats! 🎉 play another of today's puzzles?")
 
         await channel.send(embed=puzzleEmbed, view=publisherButtons())
 
@@ -75,16 +75,16 @@ class publisherButtons(discord.ui.View):
 
     @discord.ui.button(label='nyt', style=discord.ButtonStyle.grey)
     async def nyt_button(self, interaction, button):
-        #TODO send actual puzzle (get date of original puzzle?)
-        await interaction.response.send_message('Hello!')
+        #TODO get date of original puzzle?
+        await puzzle_utils.startPuzzle(interaction, "nyt")
 
     @discord.ui.button(label='lat', style=discord.ButtonStyle.grey)
     async def lat_button(self, interaction, button):
-        await interaction.response.send_message('Hello!')
+        await puzzle_utils.startPuzzle(interaction, "lat")
 
     @discord.ui.button(label='usa', style=discord.ButtonStyle.grey)
     async def usa_button(self, interaction, button):
-        await interaction.response.send_message('Hello!')
+        await puzzle_utils.startPuzzle(interaction, "usa")
 
 
 webserver.keep_alive()
