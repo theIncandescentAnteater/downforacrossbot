@@ -1,8 +1,39 @@
-import datetime  # for puzzles by date
 import requests  # for api calls
+import discord
+
+from dateutil import parser  # for puzzles by date
+from datetime import datetime, timedelta
+from typing import Literal  # for autocomplete
+
+import puzzle_utils
 
 API_URL = "downforacross-com.onrender.com"
 SITE_URL = "crosswithfriends.com"
+
+
+async def startPuzzle(
+    interaction: discord.Interaction,
+    publisher: Literal["nyt", "lat", "usa", "wsj", "newsday", "universal", "atlantic"],
+    date: str = "",
+    edit: bool = False,
+):
+    try:
+        puzzleName = await getPuzzleName(interaction, publisher, date)
+
+        puzzleInfo = await puzzle_utils.getPuzzleInfo(searchTerm=puzzleName)
+
+        puzzleEmbed = await createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date)
+
+        if not puzzleEmbed:
+            return
+
+        if edit:
+            await interaction.response.edit_message(embed=puzzleEmbed, view=None)
+        else:
+            await interaction.response.send_message(embed=puzzleEmbed)
+
+    except Exception as e:
+        print(f"Error getting results: {e}")
 
 
 async def getResults(
@@ -20,7 +51,6 @@ async def getResults(
     )
     responseJson = response.json()
     if len(responseJson["puzzles"]) == 0:
-        print(f"oops, no results found for {searchTerm}")
         return None
     return responseJson
 
@@ -72,10 +102,33 @@ async def makeGame(jsonPuzzles: dict):
     return getGameURL(gameID)
 
 
-def getPuzzleName(publisher, date=None):
+async def getPuzzleName(interaction, publisher, date=None):
+    try:
+        # if you don't input a date, get today's puzzle
+        if not date:
+            puzzleName = puzzle_utils.getPuzzleNameFormat(publisher)
+        else:
+            # if the date is in the future, subtract a week
+            # when a day of the week is entered, the parser chooses the next instance, rather than the last. this undoes that.
+            date = parser.parse(date)
+            if date > datetime.today():
+                date = date - timedelta(days=7)
+            puzzleName = puzzle_utils.getPuzzleNameFormat(publisher, date)
+    # something went wrong with the date parsing
+    except Exception as e:
+        await interaction.response.send_message(
+            f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want",
+            ephemeral=True,
+        )
+        print(f"Error getting results: {e}")
+        return
+    return puzzleName
+
+
+def getPuzzleNameFormat(publisher, date=None):
     """returns standard name format of puzzles by a publisher on a given day"""
     if date is None:
-        date = datetime.date.today()
+        date = datetime.today()
     match publisher:
         case "nyt":
             return date.strftime(f"NY Times, %A, %B {date.day}, %Y")
@@ -95,3 +148,29 @@ def getPuzzleName(publisher, date=None):
         case _:
             print(f"error for publisher {publisher}")
             return ""
+
+
+async def createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date):
+    if puzzleInfo is None:
+        if date and date > datetime.today():
+            await interaction.response.send_message(
+                "no puzzles found for the future!", ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                f"no puzzles found for {puzzleName}", ephemeral=True
+            )
+        return None
+    else:
+        game = await puzzle_utils.makeGame(puzzleInfo)
+
+        # create embed
+        puzzleEmbed = discord.Embed(
+            title=puzzleInfo["content"]["info"]["title"],
+            url=game,
+            color=discord.Color.from_str("#78a6ee"),
+            description=puzzleInfo["content"]["info"]["author"],
+        )
+        if puzzleInfo["content"]["info"]["description"]:
+            puzzleEmbed.set_footer(text=puzzleInfo["content"]["info"]["description"])
+    return puzzleEmbed

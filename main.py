@@ -4,12 +4,10 @@ from discord import app_commands
 import logging
 from dotenv import load_dotenv
 import os
+from typing import Literal  # for autocomplete
 
 import webserver  # for hosting
 
-from dateutil import parser  # for puzzles by date
-from datetime import datetime, timedelta
-from typing import Literal  # for autocomplete
 
 import puzzle_utils
 
@@ -56,59 +54,67 @@ async def startPuzzle(
     publisher: Literal["nyt", "lat", "usa", "wsj", "newsday", "universal", "atlantic"],
     date: str = "",
 ):
-    try:
-        try:
-            # if you don't input a date, get today's puzzle
-            if not date:
-                puzzleName = puzzle_utils.getPuzzleName(publisher)
-            else:
-                # if the date is in the future, subtract a week
-                # when a day of the week is entered, the parser chooses the next instance, rather than the last. this undoes that.
-                date = parser.parse(date)
-                if date > datetime.today():
-                    date = date - timedelta(days=7)
-                puzzleName = puzzle_utils.getPuzzleName(publisher, date)
-        # something went wrong with the date parsing
-        except Exception as e:
-            await interaction.response.send_message(
-                f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want",
-                ephemeral=True,
-            )
-            print(f"Error getting results: {e}")
-            return
+    await puzzle_utils.startPuzzle(interaction, publisher, date)
 
-        puzzleInfo = await puzzle_utils.getPuzzleInfo(searchTerm=puzzleName)
 
-        # no games found
-        if puzzleInfo is None:
-            if date and date > datetime.today():
-                await interaction.response.send_message(
-                    "no puzzles found for the future!", ephemeral=True
-                )
-            else:
-                await interaction.response.send_message(
-                    f"no puzzles found for {puzzleName}", ephemeral=True
-                )
-        else:
-            game = await puzzle_utils.makeGame(puzzleInfo)
+@client.event
+async def on_reaction_add(reaction, user):
+    if str(reaction) == "✅":
+        channel = reaction.message.channel
 
-            # create embed
-            puzzleEmbed = discord.Embed(
-                title=puzzleInfo["content"]["info"]["title"],
-                url=game,
-                color=discord.Color.from_str("#78a6ee"),
-                description=puzzleInfo["content"]["info"]["author"],
-            )
-            if puzzleInfo["content"]["info"]["description"]:
-                puzzleEmbed.set_footer(
-                    text=puzzleInfo["content"]["info"]["description"]
-                )
+        # create embed
+        puzzleEmbed = discord.Embed(
+            description="congrats! 🎉 play one of today's puzzles?"
+        )
 
-            # send embed
-            await interaction.response.send_message(embed=puzzleEmbed)
+        await channel.send(embed=puzzleEmbed, view=publisherButtons(), delete_after=60)
 
-    except Exception as e:
-        print(f"Error getting results: {e}")
+
+class publisherButtons(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="nyt", style=discord.ButtonStyle.grey)
+    async def nyt_button(self, interaction, button):
+        # TODO get date of original puzzle?
+        await puzzle_utils.startPuzzle(interaction, "nyt", edit=True)
+
+    @discord.ui.button(label="lat", style=discord.ButtonStyle.grey)
+    async def lat_button(self, interaction, button):
+        await puzzle_utils.startPuzzle(interaction, "lat", edit=True)
+
+    @discord.ui.button(label="usa", style=discord.ButtonStyle.grey)
+    async def usa_button(self, interaction, button):
+        await puzzle_utils.startPuzzle(interaction, "usa", edit=True)
+
+    @discord.ui.button(label="other", style=discord.ButtonStyle.grey)
+    async def other_button(self, interaction, button):
+        await interaction.response.edit_message(view=publisherButtons2())
+
+
+class publisherButtons2(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="wsj", style=discord.ButtonStyle.grey)
+    async def wsj_button(self, interaction, button):
+        await puzzle_utils.startPuzzle(interaction, "wsj", edit=True)
+
+    @discord.ui.button(label="newsday", style=discord.ButtonStyle.grey)
+    async def newsday_button(self, interaction, button):
+        await puzzle_utils.startPuzzle(interaction, "newsday", edit=True)
+
+    @discord.ui.button(label="universal", style=discord.ButtonStyle.grey)
+    async def universal_button(self, interaction, button):
+        await puzzle_utils.startPuzzle(interaction, "universal", edit=True)
+
+    @discord.ui.button(label="atlantic", style=discord.ButtonStyle.grey)
+    async def atlantic_button(self, interaction, button):
+        await puzzle_utils.startPuzzle(interaction, "atlantic", edit=True)
+
+    @discord.ui.button(label="back", style=discord.ButtonStyle.grey)
+    async def back_button(self, interaction, button):
+        await interaction.response.edit_message(view=publisherButtons())
 
 
 webserver.keep_alive()
