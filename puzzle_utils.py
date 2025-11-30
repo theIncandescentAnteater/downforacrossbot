@@ -21,33 +21,9 @@ async def startPuzzle(
 
         puzzleInfo = await puzzle_utils.getPuzzleInfo(searchTerm=puzzleName)
 
-        # no games found
-        if puzzleInfo is None:
-            if date and date > datetime.today():
-                await interaction.response.send_message(
-                    "no puzzles found for the future!", ephemeral=True
-                )
-            else:
-                await interaction.response.send_message(
-                    f"no puzzles found for {puzzleName}", ephemeral=True
-                )
-        else:
-            game = await puzzle_utils.makeGame(puzzleInfo)
+        puzzleEmbed = await createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date)
 
-            # create embed
-            puzzleEmbed = discord.Embed(
-                title=puzzleInfo["content"]["info"]["title"],
-                url=game,
-                color=discord.Color.from_str("#78a6ee"),
-                description=puzzleInfo["content"]["info"]["author"],
-            )
-            if puzzleInfo["content"]["info"]["description"]:
-                puzzleEmbed.set_footer(
-                    text=puzzleInfo["content"]["info"]["description"]
-                )
-
-            # send embed
-            await interaction.response.send_message(embed=puzzleEmbed)
+        await interaction.response.send_message(embed=puzzleEmbed)
 
     except Exception as e:
         print(f"Error getting results: {e}")
@@ -165,3 +141,29 @@ def getPuzzleNameFormat(publisher, date=None):
             print(f"error for publisher {publisher}")
             return ""
 
+async def createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date):
+
+    if puzzleInfo is None:
+        if date and date > datetime.today():
+            await interaction.response.send_message(
+                "no puzzles found for the future!", ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                f"no puzzles found for {puzzleName}", ephemeral=True
+            )
+    else:
+        game = await puzzle_utils.makeGame(puzzleInfo)
+
+        # create embed
+        puzzleEmbed = discord.Embed(
+            title=puzzleInfo["content"]["info"]["title"],
+            url=game,
+            color=discord.Color.from_str("#78a6ee"),
+            description=puzzleInfo["content"]["info"]["author"],
+        )
+        if puzzleInfo["content"]["info"]["description"]:
+            puzzleEmbed.set_footer(
+                text=puzzleInfo["content"]["info"]["description"]
+            )
+    return puzzleEmbed
