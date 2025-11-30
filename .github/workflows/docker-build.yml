@@ -83,7 +83,7 @@ jobs:
       - name: Test pushed image
         run: |
           DIGEST="${{ steps.build.outputs.digest }}"
-          IMAGE_REF="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${DIGEST}"
+          IMAGE_REF="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}"
           echo "Testing pushed image: $IMAGE_REF"
           docker pull "$IMAGE_REF"
           docker run --rm --entrypoint sh "$IMAGE_REF" -c "python --version && uv --version && ls -la /app/*.py"
@@ -116,7 +116,7 @@ jobs:
       - name: Attest SBOM
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
-          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${DIGEST}
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
         run: |
           echo "Attesting SBOM for image: $IMAGE_REF"
           cosign attest --yes \
@@ -152,7 +152,7 @@ jobs:
         run: |
           # Sign using digest for multi-platform images
           # Cosign handles multi-arch manifests when signing by digest
-          IMAGE_REF="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${DIGEST}"
+          IMAGE_REF="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}"
           echo "Signing image by digest: $IMAGE_REF"
           cosign sign --yes "$IMAGE_REF"
 
@@ -168,5 +168,5 @@ jobs:
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          subject-digest: sha256:${{ steps.build.outputs.digest }}
+          subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
