@@ -15,6 +15,7 @@ async def startPuzzle(
     interaction: discord.Interaction,
     publisher: Literal["nyt", "lat", "usa", "wsj", "newsday", "universal", "atlantic"],
     date: str = "",
+    edit: bool = False,
 ):
     try:
         puzzleName = await getPuzzleName(interaction, publisher, date)
@@ -23,7 +24,13 @@ async def startPuzzle(
 
         puzzleEmbed = await createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date)
 
-        await interaction.response.send_message(embed=puzzleEmbed)
+        if not puzzleEmbed:
+            return
+
+        if edit:
+            await interaction.response.edit_message(embed=puzzleEmbed, view=None)
+        else:
+            await interaction.response.send_message(embed=puzzleEmbed)
 
     except Exception as e:
         print(f"Error getting results: {e}")
@@ -44,7 +51,6 @@ async def getResults(
     )
     responseJson = response.json()
     if len(responseJson["puzzles"]) == 0:
-        print(f"oops, no results found for {searchTerm}")
         return None
     return responseJson
 
@@ -152,6 +158,7 @@ async def createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date):
             await interaction.response.send_message(
                 f"no puzzles found for {puzzleName}", ephemeral=True
             )
+        return None
     else:
         game = await puzzle_utils.makeGame(puzzleInfo)
 
