@@ -2,55 +2,125 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - ".github/workflows/**"
+      - ".dockerignore"
   pull_request:
-    branches: [ main ]
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - ".github/workflows/**"
+      - ".dockerignore"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
   pull-requests: read
   packages: write
   id-token: write
+  attestations: write
 
 jobs:
-  lint-and-type-check:
-    name: Lint and Type Check
+  dependency-scan:
+    name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    strategy:
-      matrix:
-        python-version: ['3.14']
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-      
+
       - name: Install uv and set the Python version
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.14"
           enable-cache: true
-      
+
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
-      
+
+      - name: Audit dependencies for vulnerabilities
+        run: uv audit
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.14"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+
       - name: Run Ruff (linting)
         run: uv run ruff check --output-format github .
-      
+
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.14"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+
       - name: Run Ruff (format check)
         run: uv run ruff format --output-format github --check .
-      
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.14"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+
       - name: Run type check
         run: uv run ty check --output-format github .
-  
+
   build-docker:
     name: Build and Push Docker Image (PR)
-    needs: lint-and-type-check
+    needs: [lint, format-check, type-check, dependency-scan]
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/docker-build.yml
     with:
       tags: |
         type=ref,event=pr
         type=sha
-
+      platforms: linux/amd64,linux/arm64

@@ -5,13 +5,22 @@ on:
     branches:
       - main
     tags:
-      - 'v*'
+      - "v*"
+    paths-ignore:
+      - "**.md"
+      - ".github/workflows/**"
+      - ".dockerignore"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
   packages: write
   id-token: write
+  attestations: write
 
 jobs:
   build-and-push:
@@ -25,4 +34,4 @@ jobs:
         type=sha
         type=raw,value=latest,enable={{is_default_branch}}
       test-image-tag: latest
-
+      platforms: linux/amd64,linux/arm64
