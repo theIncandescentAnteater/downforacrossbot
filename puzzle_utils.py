@@ -11,6 +11,7 @@ import puzzle_utils
 API_URL = "downforacross-com.onrender.com"
 SITE_URL = "crosswithfriends.com"
 
+
 async def startPuzzle(
     interaction: discord.Interaction,
     publisher: Literal["nyt", "lat", "usa", "wsj", "newsday", "universal", "atlantic"],
@@ -101,6 +102,7 @@ async def makeGame(jsonPuzzles: dict):
     await createGame(puzzleID, gameID)
     return getGameURL(gameID)
 
+
 async def getPuzzleName(interaction, publisher, date=None):
     try:
         # if you don't input a date, get today's puzzle
@@ -122,6 +124,7 @@ async def getPuzzleName(interaction, publisher, date=None):
         print(f"Error getting results: {e}")
         return
     return puzzleName
+
 
 def getPuzzleNameFormat(publisher, date=None):
     """returns standard name format of puzzles by a publisher on a given day"""
@@ -147,8 +150,8 @@ def getPuzzleNameFormat(publisher, date=None):
             print(f"error for publisher {publisher}")
             return ""
 
-async def createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date):
 
+async def createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date):
     if puzzleInfo is None:
         if date and date > datetime.today():
             await interaction.response.send_message(
@@ -170,7 +173,5 @@ async def createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date):
             description=puzzleInfo["content"]["info"]["author"],
         )
         if puzzleInfo["content"]["info"]["description"]:
-            puzzleEmbed.set_footer(
-                text=puzzleInfo["content"]["info"]["description"]
-            )
+            puzzleEmbed.set_footer(text=puzzleInfo["content"]["info"]["description"])
     return puzzleEmbed

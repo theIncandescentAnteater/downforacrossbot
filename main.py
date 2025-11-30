@@ -56,13 +56,16 @@ async def startPuzzle(
 ):
     await puzzle_utils.startPuzzle(interaction, publisher, date)
 
+
 @client.event
 async def on_reaction_add(reaction, user):
     if str(reaction) == "✅":
         channel = reaction.message.channel
 
         # create embed
-        puzzleEmbed = discord.Embed(description="congrats! 🎉 play one of today's puzzles?")
+        puzzleEmbed = discord.Embed(
+            description="congrats! 🎉 play one of today's puzzles?"
+        )
 
         await channel.send(embed=puzzleEmbed, view=publisherButtons(), delete_after=60)
 
@@ -71,20 +74,20 @@ class publisherButtons(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label='nyt', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="nyt", style=discord.ButtonStyle.grey)
     async def nyt_button(self, interaction, button):
-        #TODO get date of original puzzle?
+        # TODO get date of original puzzle?
         await puzzle_utils.startPuzzle(interaction, "nyt", edit=True)
 
-    @discord.ui.button(label='lat', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="lat", style=discord.ButtonStyle.grey)
     async def lat_button(self, interaction, button):
         await puzzle_utils.startPuzzle(interaction, "lat", edit=True)
 
-    @discord.ui.button(label='usa', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="usa", style=discord.ButtonStyle.grey)
     async def usa_button(self, interaction, button):
         await puzzle_utils.startPuzzle(interaction, "usa", edit=True)
 
-    @discord.ui.button(label='other', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="other", style=discord.ButtonStyle.grey)
     async def other_button(self, interaction, button):
         await interaction.response.edit_message(view=publisherButtons2())
 
@@ -93,23 +96,23 @@ class publisherButtons2(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label='wsj', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="wsj", style=discord.ButtonStyle.grey)
     async def wsj_button(self, interaction, button):
         await puzzle_utils.startPuzzle(interaction, "wsj", edit=True)
 
-    @discord.ui.button(label='newsday', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="newsday", style=discord.ButtonStyle.grey)
     async def newsday_button(self, interaction, button):
         await puzzle_utils.startPuzzle(interaction, "newsday", edit=True)
 
-    @discord.ui.button(label='universal', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="universal", style=discord.ButtonStyle.grey)
     async def universal_button(self, interaction, button):
         await puzzle_utils.startPuzzle(interaction, "universal", edit=True)
 
-    @discord.ui.button(label='atlantic', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="atlantic", style=discord.ButtonStyle.grey)
     async def atlantic_button(self, interaction, button):
         await puzzle_utils.startPuzzle(interaction, "atlantic", edit=True)
 
-    @discord.ui.button(label='back', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="back", style=discord.ButtonStyle.grey)
     async def back_button(self, interaction, button):
         await interaction.response.edit_message(view=publisherButtons())
 
