@@ -17,25 +17,7 @@ async def startPuzzle(
     date: str = "",
 ):
     try:
-        try:
-            # if you don't input a date, get today's puzzle
-            if not date:
-                puzzleName = puzzle_utils.getPuzzleName(publisher)
-            else:
-                # if the date is in the future, subtract a week
-                # when a day of the week is entered, the parser chooses the next instance, rather than the last. this undoes that.
-                date = parser.parse(date)
-                if date > datetime.today():
-                    date = date - timedelta(days=7)
-                puzzleName = puzzle_utils.getPuzzleName(publisher, date)
-        # something went wrong with the date parsing
-        except Exception as e:
-            await interaction.response.send_message(
-                f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want",
-                ephemeral=True,
-            )
-            print(f"Error getting results: {e}")
-            return
+        puzzleName = await getPuzzleName(interaction, publisher, date)
 
         puzzleInfo = await puzzle_utils.getPuzzleInfo(searchTerm=puzzleName)
 
@@ -137,8 +119,29 @@ async def makeGame(jsonPuzzles: dict):
     await createGame(puzzleID, gameID)
     return getGameURL(gameID)
 
+async def getPuzzleName(interaction, publisher, date=None):
+    try:
+        # if you don't input a date, get today's puzzle
+        if not date:
+            puzzleName = puzzle_utils.getPuzzleNameFormat(publisher)
+        else:
+            # if the date is in the future, subtract a week
+            # when a day of the week is entered, the parser chooses the next instance, rather than the last. this undoes that.
+            date = parser.parse(date)
+            if date > datetime.today():
+                date = date - timedelta(days=7)
+            puzzleName = puzzle_utils.getPuzzleNameFormat(publisher, date)
+    # something went wrong with the date parsing
+    except Exception as e:
+        await interaction.response.send_message(
+            f"i don't know how to intepret `{date}`. try m/d, m/d/yy, or typing out the month or the day of the week that you want",
+            ephemeral=True,
+        )
+        print(f"Error getting results: {e}")
+        return
+    return puzzleName
 
-def getPuzzleName(publisher, date=None):
+def getPuzzleNameFormat(publisher, date=None):
     """returns standard name format of puzzles by a publisher on a given day"""
     if date is None:
         date = datetime.today()
@@ -161,3 +164,4 @@ def getPuzzleName(publisher, date=None):
         case _:
             print(f"error for publisher {publisher}")
             return ""
+
