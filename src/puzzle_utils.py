@@ -15,6 +15,7 @@ async def startPuzzle(
     date: str = "",
     edit: bool = False,
 ):
+    """sends embed with link to puzzle matching publisher and date"""
     try:
         puzzleName = await getPuzzleName(interaction, publisher, date)
 
@@ -69,6 +70,7 @@ async def makeGame(jsonPuzzles: dict):
 
 
 async def getPuzzleName(interaction, publisher, date=None):
+    """get name of puzzle from publisher, including date parsing if provided"""
     try:
         # if you don't input a date, get today's puzzle
         if not date:
@@ -117,6 +119,8 @@ def getPuzzleNameFormat(publisher, date=None):
 
 
 async def createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date):
+    """creates discord embed containing puzzle information if available. otherwise, send response message to user"""
+    # TODO error response messages don't belong in here. separate
     if puzzleInfo is None:
         if date and date > datetime.today():
             await interaction.response.send_message(
