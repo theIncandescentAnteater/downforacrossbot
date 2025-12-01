@@ -1,13 +1,11 @@
-import requests  # for api calls
 import discord
 
 from dateutil import parser  # for puzzles by date
 from datetime import datetime, timedelta
 from typing import Literal  # for autocomplete
 
-import puzzle_utils
+import cwf_utils
 
-API_URL = "downforacross-com.onrender.com"
 SITE_URL = "crosswithfriends.com"
 
 
@@ -20,7 +18,7 @@ async def startPuzzle(
     try:
         puzzleName = await getPuzzleName(interaction, publisher, date)
 
-        puzzleInfo = await puzzle_utils.getPuzzleInfo(searchTerm=puzzleName)
+        puzzleInfo = await getPuzzleInfo(searchTerm=puzzleName)
 
         puzzleEmbed = await createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date)
 
@@ -36,25 +34,6 @@ async def startPuzzle(
         print(f"Error getting results: {e}")
 
 
-async def getResults(
-    resultsPage=0, pageSize=50, searchTerm="", standardSize="true", miniSize="true"
-):
-    """return json results of list of puzzles from cwf given search criteria"""
-
-    response = requests.get(
-        f"https://{API_URL}/api/puzzle_list?"
-        f"page={resultsPage}&"
-        f"pageSize={pageSize}&"
-        f"filter%5BnameOrTitleFilter%5D={searchTerm}&"
-        f"filter%5BsizeFilter%5D%5BMini%5D={miniSize}&"
-        f"filter%5BsizeFilter%5D%5BStandard%5D={standardSize}"
-    )
-    responseJson = response.json()
-    if len(responseJson["puzzles"]) == 0:
-        return None
-    return responseJson
-
-
 async def getPuzzleID(results, index=0):
     """returns pid from first puzzle in json results"""
     try:
@@ -62,19 +41,6 @@ async def getPuzzleID(results, index=0):
 
     except Exception as e:
         print(f"Error getting results: {e}")
-
-
-async def getGID():
-    """get gid from cwf api counter"""
-    gidCounter = requests.post(f"https://{API_URL}/api/counters/gid")
-    gidCounterJson = gidCounter.json()
-    return gidCounterJson["gid"]
-
-
-async def createGame(pid, gid):
-    """create game instance in cwf database"""
-    data = {"gid": gid, "pid": pid}
-    requests.post(f"https://{API_URL}/api/game", json=data)
 
 
 def getGameURL(gid):
@@ -86,7 +52,7 @@ async def getPuzzleInfo(
     resultsPage=0, pageSize=50, searchTerm="", standardSize="true", miniSize="true"
 ):
     """returns json results for search criteria"""
-    results = await getResults(
+    results = await cwf_utils.getResults(
         resultsPage, pageSize, searchTerm, standardSize, miniSize
     )
     if results is None:
@@ -97,8 +63,8 @@ async def getPuzzleInfo(
 async def makeGame(jsonPuzzles: dict):
     """returns url of a new game instance for a cwf puzzle given json of puzzles"""
     puzzleID = await getPuzzleID(jsonPuzzles)
-    gameID = await getGID()
-    await createGame(puzzleID, gameID)
+    gameID = await cwf_utils.getGID()
+    await cwf_utils.createGame(puzzleID, gameID)
     return getGameURL(gameID)
 
 
@@ -106,14 +72,14 @@ async def getPuzzleName(interaction, publisher, date=None):
     try:
         # if you don't input a date, get today's puzzle
         if not date:
-            puzzleName = puzzle_utils.getPuzzleNameFormat(publisher)
+            puzzleName = getPuzzleNameFormat(publisher)
         else:
             # if the date is in the future, subtract a week
             # when a day of the week is entered, the parser chooses the next instance, rather than the last. this undoes that.
             date = parser.parse(date)
             if date > datetime.today():
                 date = date - timedelta(days=7)
-            puzzleName = puzzle_utils.getPuzzleNameFormat(publisher, date)
+            puzzleName = getPuzzleNameFormat(publisher, date)
     # something went wrong with the date parsing
     except Exception as e:
         await interaction.response.send_message(
@@ -162,7 +128,7 @@ async def createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date):
             )
         return None
     else:
-        game = await puzzle_utils.makeGame(puzzleInfo)
+        game = await makeGame(puzzleInfo)
 
         # create embed
         puzzleEmbed = discord.Embed(
