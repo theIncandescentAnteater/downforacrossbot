@@ -4,7 +4,7 @@ from dateutil import parser  # for puzzles by date
 from datetime import datetime, timedelta
 from typing import Literal  # for autocomplete
 
-import cwf_utils
+import api_utils
 
 SITE_URL = "crosswithfriends.com"
 
@@ -53,7 +53,7 @@ async def getPuzzleInfo(
     resultsPage=0, pageSize=50, searchTerm="", standardSize="true", miniSize="true"
 ):
     """returns json results for search criteria"""
-    results = await cwf_utils.getResults(
+    results = await api_utils.getResults(
         resultsPage, pageSize, searchTerm, standardSize, miniSize
     )
     if results is None:
@@ -64,8 +64,8 @@ async def getPuzzleInfo(
 async def makeGame(jsonPuzzles: dict):
     """returns url of a new game instance for a cwf puzzle given json of puzzles"""
     puzzleID = await getPuzzleID(jsonPuzzles)
-    gameID = await cwf_utils.getGID()
-    await cwf_utils.createGame(puzzleID, gameID)
+    gameID = await api_utils.getGID()
+    await api_utils.createGame(puzzleID, gameID)
     return getGameURL(gameID)
 
 
