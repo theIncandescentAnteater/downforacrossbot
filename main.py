@@ -67,7 +67,7 @@ async def on_reaction_add(reaction, user):
             description="congrats! 🎉 play one of today's puzzles?"
         )
 
-        await channel.send(embed=puzzleEmbed, view=publisherButtons(), delete_after=60)
+        await channel.send(embed=puzzleEmbed, view=publisherButtons())
 
 
 class publisherButtons(discord.ui.View):
