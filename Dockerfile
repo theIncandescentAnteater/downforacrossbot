@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Install build dependencies for compiling Python packages
-RUN apk add --no-cache \
+RUN apk add --no-cache --no-scripts \
     gcc \
     musl-dev \
     libffi-dev
@@ -55,4 +55,3 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Run the application using uv
 # This starts both the FastAPI server (in background) and Discord bot
 CMD ["uv", "run", "python", "main.py"]
-
