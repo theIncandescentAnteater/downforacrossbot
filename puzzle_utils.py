@@ -36,24 +36,6 @@ async def startPuzzle(
         print(f"Error getting results: {e}")
 
 
-async def getResults(
-    resultsPage=0, pageSize=50, searchTerm="", standardSize="true", miniSize="true"
-):
-    """return json results of list of puzzles from cwf given search criteria"""
-
-    response = requests.get(
-        f"https://{API_URL}/api/puzzle_list?"
-        f"page={resultsPage}&"
-        f"pageSize={pageSize}&"
-        f"filter%5BnameOrTitleFilter%5D={searchTerm}&"
-        f"filter%5BsizeFilter%5D%5BMini%5D={miniSize}&"
-        f"filter%5BsizeFilter%5D%5BStandard%5D={standardSize}"
-    )
-    responseJson = response.json()
-    if len(responseJson["puzzles"]) == 0:
-        return None
-    return responseJson
-
 
 async def getPuzzleID(results, index=0):
     """returns pid from first puzzle in json results"""
