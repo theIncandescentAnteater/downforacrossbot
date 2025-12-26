@@ -1,4 +1,4 @@
-const { getMatchingPuzzles, getFirstPuzzle, getPuzzleID, getPuzzleNameFormat } = require('../utilities/puzzle-utils');
+const { getFirstMatchingPuzzle } = require('../utilities/puzzle-utils');
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
@@ -10,8 +10,7 @@ module.exports = {
 	async execute(interaction) {
 
 		try {
-			let puzzles = await getMatchingPuzzles();
-			let puzzle = getFirstPuzzle(puzzles);
+			let puzzle = await getFirstMatchingPuzzle();
 			await interaction.reply(puzzle);
 
 		} catch (error) {

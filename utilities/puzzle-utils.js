@@ -4,11 +4,11 @@ const API_URL = "downforacross-com.onrender.com"
 const SITE_URL = "crosswithfriends.com"
 
 /**
- * @returns {json} json results of list of puzzles from cwf given search criteria
+ * @returns {json} json of first puzzle from cwf search given search criteria
  */
-async function getMatchingPuzzles(resultsPage = 0, pageSize = 2, searchTerm = "", standardSize = "true", miniSize = "true") {
+async function getFirstMatchingPuzzle(resultsPage = 0, searchTerm = "", standardSize = "true", miniSize = "true") {
   
-  const url = `https://${API_URL}/api/puzzle_list?page=${resultsPage}&pageSize=${pageSize}&filter%5BnameOrTitleFilter%5D=${searchTerm}&filter%5BsizeFilter%5D%5BMini%5D=${miniSize}&filter%5BsizeFilter%5D%5BStandard%5D=${standardSize}`;
+  const url = `https://${API_URL}/api/puzzle_list?page=${resultsPage}&pageSize=1&filter%5BnameOrTitleFilter%5D=${searchTerm}&filter%5BsizeFilter%5D%5BMini%5D=${miniSize}&filter%5BsizeFilter%5D%5BStandard%5D=${standardSize}`;
 		try {
 			// get the response from api
 			const response = await fetch(url);
@@ -26,24 +26,13 @@ async function getMatchingPuzzles(resultsPage = 0, pageSize = 2, searchTerm = ""
 				puzzles = json.puzzles;
 			}
 
-      return puzzles
+      return puzzles[0]
 
 		} catch (error) {
 			console.error(error.message);
 		}
 }
 
-/**
- * 
- * @param {json} puzzles 
- * @returns {json} json for just the first puzzle
- */
-function getFirstPuzzle(puzzles) {
-    console.log("36")
-    console.log(puzzles)
-    // console.log(data.puzzles[0])
-    return puzzles[0]
-}
 
 /**
  * 
