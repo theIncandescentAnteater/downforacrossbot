@@ -1,3 +1,4 @@
+const { MessageFlags } = require("discord.js");
 const puzzle = require("../commands/puzzle");
 
 const API_URL = "downforacross-com.onrender.com"
@@ -87,4 +88,45 @@ function getPuzzleNameFormat(publisher, date){
 	}
 }
 
-module.exports = { getMatchingPuzzles, getFirstPuzzle, getPuzzleID, getPuzzleNameFormat }
+/**
+ * 
+ * @param {*} interaction 
+ * @param {string} publisher 
+ * @param {string} datestring 
+ * @returns {string} name of puzzle based on given publisher and datestring. also send ephemeral message if date not parsable 
+ */
+async function getPuzzleName(interaction, publisher, datestring=null){
+    try {
+		let date;
+
+        if (datestring){
+            // if the date is in the future, subtract a week
+            // when a day of the week is entered, the parser chooses the next instance, rather than the last. this undoes that.
+			date = new Date(Date.parse(datestring));
+			if (isNaN(date)){
+				await interaction.reply({
+					content: `i don't know how to intepret ${datestring}. try m/d or m/d/yy`,
+					flags: MessageFlags.Ephemeral
+				});
+			}
+            if (date > new Date()){
+                date.setDate(date.getDate() - 7)
+			}            
+		} else {
+			date = new Date(); // gets current date
+		}
+
+		puzzleName = getPuzzleNameFormat(publisher, date)
+	} catch (error) {
+    // // something went wrong with the date parsing
+    //     await interaction.response.send_message(
+    //         `i don't know how to intepret ${date}. try m/d, m/d/yy, or typing out the month or the day of the week that you want`,
+    //         ephemeral=True,
+    //     )
+        console.log(`Error getting results: ${error}`)
+        return
+	}
+    return puzzleName
+}
+
+module.exports = { getFirstMatchingPuzzle, getPuzzleID, getPuzzleName}
