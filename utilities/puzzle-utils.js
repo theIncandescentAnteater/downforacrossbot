@@ -46,19 +46,12 @@ function getPuzzleID(puzzle) {
 /**
  * 
  * @param {string} publisher 
- * @param {*} date 
+ * @param {Date} date 
  * @returns {string} standard name format of puzzles by a publisher on a given day
  */
-function getPuzzleNameFormat(publisher, datestring=null){
+function getPuzzleNameFormat(publisher, date){
 
-	let date = new Date(); // gets current date
-
-    if (datestring) {
-		date = Date.parse(datestring)
-	}
-	
-
-	const d = String(date.getDate());
+	const d = "" + date.getDate();
 	const dd = d.padStart(2, '0');
 	const month = date.toLocaleString('default', { month: 'long' });
 	const monthShort = date.toLocaleString('default', { month: 'short' });
