@@ -34,7 +34,6 @@ async function getFirstMatchingPuzzle(resultsPage = 0, searchTerm = "", standard
 		}
 }
 
-
 /**
  * 
  * @param {json} puzzle cwf style puzzle json 
@@ -129,4 +128,8 @@ async function getPuzzleName(interaction, publisher, datestring=null){
     return puzzleName
 }
 
-module.exports = { getFirstMatchingPuzzle, getPuzzleID, getPuzzleName}
+async function sendPuzzle(channel, publisher, datestring=null) {
+	
+}
+
+module.exports = { getFirstMatchingPuzzle, getPuzzleID, getPuzzleName, sendPuzzle}

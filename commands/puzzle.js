@@ -1,4 +1,5 @@
 const { getFirstMatchingPuzzle, getPuzzleName } = require('../utilities/puzzle-utils');
+const { publisherButtons } = require('../utilities/buttons');
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
@@ -22,7 +23,10 @@ module.exports = {
 
 			// channel.send({ embeds: [puzzleEmbed] });
 
-			await interaction.reply({ embeds: [puzzleEmbed] });
+			await interaction.reply({ 
+				embeds: [puzzleEmbed],
+				components: [publisherButtons],
+			 });
 
 		} catch (error) {
 			console.error(error.message);
