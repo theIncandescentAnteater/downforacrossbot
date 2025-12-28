@@ -1,5 +1,5 @@
-
 const API_URL = "downforacross-com.onrender.com"
+const SITE_URL = "crosswithfriends.com"
 
 /**
  * 
@@ -35,4 +35,49 @@ async function getFirstMatchingPuzzle(searchTerm = "", standardSize = "true", mi
     }
 }
 
-module.exports = { getFirstMatchingPuzzle }
+/**
+ * 
+ * @param {*} puzzleJSON 
+ * @returns link to new game instance of given puzzle 
+ */
+async function makeGame(puzzleJSON) {
+    const gameID = await getGID();
+    const puzzleID = puzzleJSON.pid;
+
+    const response = await fetch(`https://${API_URL}/api/game`, {
+        method: "POST",
+        body: JSON.stringify({
+            gid: gameID,
+            pid: puzzleID,
+        }),
+        headers: {
+          "Content-type": "application/json",
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+    }
+
+    return `https://${SITE_URL}/beta/game/${gameID}`
+}
+
+
+/**
+ * 
+ * @returns next game id from api counter
+ */
+async function getGID() {
+    const response = await fetch(`https://${API_URL}/api/counters/gid`, {
+        method: "POST"
+    });
+    if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+    }
+
+    const json = await response.json();
+
+    return json["gid"];
+}
+
+module.exports = { getFirstMatchingPuzzle, makeGame }

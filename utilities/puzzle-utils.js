@@ -1,17 +1,7 @@
 const { MessageFlags } = require("discord.js");
-const { getFirstMatchingPuzzle } = require("./api-utils")
-
-const SITE_URL = "crosswithfriends.com"
+const { getFirstMatchingPuzzle, makeGame } = require("./api-utils")
 
 
-/**
- * 
- * @param {json} puzzle cwf style puzzle json 
- * @returns {number} the puzzleid
- */
-function getPuzzleID(puzzle) {
-    return puzzle.pid
-}
 
 /**
  * 
