@@ -1,4 +1,4 @@
-const { MessageFlags } = require("discord.js");
+const { MessageFlags, EmbedBuilder } = require("discord.js");
 const { getFirstMatchingPuzzle, makeGame } = require("./api-utils")
 
 
@@ -81,18 +81,17 @@ function getPuzzleDate(datestring) {
  * 
  * @param {*} interaction 
  * @param {string} publisher 
- * @param {string} datestring 
+ * @param {Date} date defaults to current day
  * @returns {string} name of puzzle based on given publisher and datestring. also send ephemeral message if date not parsable 
  */
-async function getPuzzleName(interaction, publisher, datestring=null){
+async function getPuzzleName(interaction, publisher, date = new Date()){
     try {
-        const date = getPuzzleDate(datestring);
 
         if (!date){
-				await interaction.reply({
-					content: `i don't know how to intepret ${datestring}. try m/d or m/d/yy`,
-					flags: MessageFlags.Ephemeral
-				});
+            await interaction.reply({
+                content: `i don't know how to intepret ${datestring}. try m/d or m/d/yy`,
+                flags: MessageFlags.Ephemeral
+            });
             return;
         }
 		return puzzleName = getPuzzleNameFormat(publisher, date)
@@ -100,11 +99,75 @@ async function getPuzzleName(interaction, publisher, datestring=null){
         console.log(`Error getting results: ${error}`)
         return
 	}
-    return puzzleName
 }
 
-async function sendPuzzle(channel, publisher, datestring=null) {
-	
+/**
+ * 
+ * @param {*} interaction 
+ * @param {*} puzzleInfo 
+ * @param {*} puzzleName 
+ * @param {*} date 
+ * @returns 
+ */
+async function createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date) {
+    if (!puzzleInfo) {
+        if (date && date > new Date()){
+            await interaction.reply({
+                content: "no puzzles found for the future!",
+                flags: MessageFlags.Ephemeral
+            });
+        } else{
+            await interaction.reply({
+                content: `no puzzles found for ${puzzleName}`,
+                flags: MessageFlags.Ephemeral
+            });
+        return null;
+		}
+	}
+    else {
+        const gameLink = await makeGame(puzzleInfo);
+
+        // create embed
+
+        const puzzleEmbed = new EmbedBuilder()
+            .setColor(0x78a6ee)
+            .setTitle(puzzleInfo["content"]["info"]["title"])
+            .setURL(gameLink)
+            .setDescription(puzzleInfo["content"]["info"]["author"])
+
+        if (puzzleInfo["content"]["info"]["description"]){
+            puzzleEmbed.setFooter(puzzleInfo["content"]["info"]["description"])
+	    }
+    	return puzzleEmbed
+	}
 }
 
-module.exports = { getFirstMatchingPuzzle, getPuzzleID, getPuzzleName, sendPuzzle}
+/**
+ * 
+ * @param {*} interaction 
+ * @param {*} publisher 
+ * @param {*} datestring 
+ * @returns 
+ */
+async function sendPuzzle(interaction, publisher, datestring=null) {
+
+    const date = getPuzzleDate(datestring);
+
+	const puzzleName = await getPuzzleName(interaction, publisher, date);
+
+	const puzzleInfo = await getFirstMatchingPuzzle(searchTerm = puzzleName);
+
+	const puzzleEmbed = await createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date);
+
+	if (!puzzleEmbed) {
+		return;
+	}
+
+    await interaction.reply({ 
+        embeds: [puzzleEmbed],
+    });
+
+	console.log("sending puzzle");
+}
+
+module.exports = { getPuzzleName, sendPuzzle, getPuzzleDate }
