@@ -89,6 +89,36 @@ function getPuzzleNameFormat(publisher, date){
 
 /**
  * 
+ * @param {string} datestring 
+ * @returns {Date} parsed date, or current date if none
+ */
+function getPuzzleDate(datestring) {
+    try {
+		let date;
+
+        if (datestring){
+            // if the date is in the future, subtract a week
+			date = new Date(Date.parse(datestring));
+			if (isNaN(date)){
+				throw new Error(`date ${datestring} not parsable`);
+			}
+		} else {
+			date = new Date(); // gets current date
+		} 
+        // parser defaults to 2001. if defaulted, reset to current year
+        if (date.getFullYear() == 2001 && !datestring.includes("2001")) {
+            date.setFullYear(new Date().getFullYear());
+        }
+        return date;
+    } catch (error) {
+        console.log(`Error getting results: ${error}`);
+        return null;
+	}
+
+}
+
+/**
+ * 
  * @param {*} interaction 
  * @param {string} publisher 
  * @param {string} datestring 
@@ -96,32 +126,17 @@ function getPuzzleNameFormat(publisher, date){
  */
 async function getPuzzleName(interaction, publisher, datestring=null){
     try {
-		let date;
+        const date = getPuzzleDate(datestring);
 
-        if (datestring){
-            // if the date is in the future, subtract a week
-            // when a day of the week is entered, the parser chooses the next instance, rather than the last. this undoes that.
-			date = new Date(Date.parse(datestring));
-			if (isNaN(date)){
+        if (!date){
 				await interaction.reply({
 					content: `i don't know how to intepret ${datestring}. try m/d or m/d/yy`,
 					flags: MessageFlags.Ephemeral
 				});
-			}
-            if (date > new Date()){
-                date.setDate(date.getDate() - 7)
-			}            
-		} else {
-			date = new Date(); // gets current date
-		}
-
-		puzzleName = getPuzzleNameFormat(publisher, date)
+            return;
+        }
+		return puzzleName = getPuzzleNameFormat(publisher, date)
 	} catch (error) {
-    // // something went wrong with the date parsing
-    //     await interaction.response.send_message(
-    //         `i don't know how to intepret ${date}. try m/d, m/d/yy, or typing out the month or the day of the week that you want`,
-    //         ephemeral=True,
-    //     )
         console.log(`Error getting results: ${error}`)
         return
 	}
