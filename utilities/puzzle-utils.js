@@ -4,33 +4,37 @@ const API_URL = "downforacross-com.onrender.com"
 const SITE_URL = "crosswithfriends.com"
 
 /**
+ * 
+ * @param {*} searchTerm 
+ * @param {*} standardSize 
+ * @param {*} miniSize 
  * @returns {json} json of first puzzle from cwf search given search criteria
  */
-async function getFirstMatchingPuzzle(resultsPage = 0, searchTerm = "", standardSize = "true", miniSize = "true") {
+async function getFirstMatchingPuzzle(searchTerm = "", standardSize = "true", miniSize = "true") {
   
-  const url = `https://${API_URL}/api/puzzle_list?page=${resultsPage}&pageSize=1&filter%5BnameOrTitleFilter%5D=${searchTerm}&filter%5BsizeFilter%5D%5BMini%5D=${miniSize}&filter%5BsizeFilter%5D%5BStandard%5D=${standardSize}`;
-		try {
-			// get the response from api
-			const response = await fetch(url);
-			if (!response.ok) {
-			throw new Error(`Response status: ${response.status}`);
-			}
+    const url = `https://${API_URL}/api/puzzle_list?page=0&pageSize=1&filter[nameOrTitleFilter]=${searchTerm}&filter[sizeFilter][Mini]=${miniSize}&filter[sizeFilter][Standard]=${standardSize}`;
 
-			const json = await response.json();
+    try {
+        // get the response from api
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`);
+        }
 
-			// get puzzles from response
-			if (json.puzzles.length == 0){
-				puzzles = null;
-			}
-			else { 
-				puzzles = json.puzzles;
-			}
+        const json = await response.json();
 
-      return puzzles[0]
+        let puzzles = null;
 
-		} catch (error) {
-			console.error(error.message);
-		}
+        // get puzzles from response
+        if (json.puzzles.length != 0){ 
+            puzzles = json.puzzles;
+        }
+
+    return puzzles[0];
+
+    } catch (error) {
+        console.error(error.message);
+    }
 }
 
 /**
