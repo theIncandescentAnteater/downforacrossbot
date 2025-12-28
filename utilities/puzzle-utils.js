@@ -1,5 +1,4 @@
 const { MessageFlags } = require("discord.js");
-const puzzle = require("../commands/puzzle");
 
 const API_URL = "downforacross-com.onrender.com"
 const SITE_URL = "crosswithfriends.com"
