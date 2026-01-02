@@ -163,9 +163,20 @@ async function sendPuzzle(interaction, publisher, datestring=null) {
 		return;
 	}
 
-    await interaction.reply({ 
-        embeds: [puzzleEmbed],
-    });
+    // delete button messages, reply to non-button interactions
+    if (interaction.message) {
+        await interaction.channel.send({ 
+            embeds: [puzzleEmbed],
+        });
+
+        await interaction.message.delete();
+
+    } else {
+        await interaction.reply({ 
+            embeds: [puzzleEmbed],
+        });
+    }
+    
 
 	console.log("sending puzzle");
 }
