@@ -5,21 +5,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('puzzle')
-		.setDescription('start a puzzle with crosswithfriends')
-		.addStringOption((publisher) => 
-			publisher
-				.setName('publisher')
-				.setDescription('the publisher that puzzle came from')
-				.addChoices(
-					{ name: 'nyt', value: 'nyt' },
-					{ name: 'lat', value: 'lat' },
-					{ name: 'usa', value: 'usa' },
-					{ name: 'wsj', value: 'wsj' },
-					{ name: 'newsday', value: 'newsday' },
-					{ name: 'universal', value: 'universal' },
-					{ name: 'new yorker', value: 'new yorker' },
-				)
-		),
+		.setDescription('select a puzzle to play'),
 
 	async execute(interaction) {
 
