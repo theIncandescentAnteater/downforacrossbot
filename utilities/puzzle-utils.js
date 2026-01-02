@@ -136,7 +136,7 @@ async function createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date) {
             .setDescription(puzzleInfo["content"]["info"]["author"])
 
         if (puzzleInfo["content"]["info"]["description"]){
-            puzzleEmbed.setFooter(puzzleInfo["content"]["info"]["description"])
+            puzzleEmbed.setFooter({text: puzzleInfo["content"]["info"]["description"]})
 	    }
     	return puzzleEmbed
 	}
