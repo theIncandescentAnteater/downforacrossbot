@@ -179,9 +179,6 @@ async function sendPuzzle(interaction, publisher, datestring=null) {
             embeds: [puzzleEmbed],
         });
     }
-    
-
-	console.log("sending puzzle");
 }
 
 module.exports = { getPuzzleName, sendPuzzle, getPuzzleDate }
