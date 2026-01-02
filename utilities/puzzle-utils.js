@@ -65,9 +65,12 @@ function getPuzzleDate(datestring) {
 		} else {
 			date = new Date(); // gets current date
 		} 
-        // parser defaults to 2001. if defaulted, reset to current year
+        // parser defaults to 2001. if defaulted, reset to latest instance of that date
         if (date.getFullYear() == 2001 && !datestring.includes("2001")) {
             date.setFullYear(new Date().getFullYear());
+            if (date > new Date()){
+                date.setFullYear(new Date().getFullYear() - 1);
+            }
         }
         return date;
     } catch (error) {
