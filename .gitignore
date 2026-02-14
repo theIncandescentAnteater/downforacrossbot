@@ -1,5 +1,6 @@
-.env
+config.json
 discord.log*
 .vscode/*
 __pycache__
 /assets
+/node_modules
