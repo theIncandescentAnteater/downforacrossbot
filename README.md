@@ -2,7 +2,8 @@
 discord bot that sends crosswithfriends crossword puzzle links :)
 
 ## Commands
-- puzzle (publisher, date [optional])
+- puzzle
+- start (publisher, date [optional])
 
 ## To Run Locally
 
@@ -12,13 +13,13 @@ Install dependencies using `uv`:
 uv sync
 ```
 
-### .env file 
+### config.json file 
 Containing:
-- `DISCORD_TOKEN`, the bot token
+- `token`, the bot token
 
 ### Run the Bot
 ```bash
-uv run python main.py
+node .
 ```
 
 ## Running with Docker
