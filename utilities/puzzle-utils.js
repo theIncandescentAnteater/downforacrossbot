@@ -100,7 +100,7 @@ async function getPuzzleName(interaction, publisher, date = new Date()) {
 			});
 			return;
 		}
-		return (puzzleName = getPuzzleNameFormat(publisher, date));
+		return (getPuzzleNameFormat(publisher, date));
 	} catch (error) {
 		console.log(`Error getting results: ${error}`);
 		return;
@@ -113,7 +113,7 @@ async function getPuzzleName(interaction, publisher, date = new Date()) {
  * @param {*} puzzleInfo
  * @param {*} puzzleName
  * @param {*} date
- * @returns
+ * @returns {EmbedBuilder} with puzzle link and info
  */
 async function createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date) {
 	if (!puzzleInfo) {
@@ -154,7 +154,6 @@ async function createPuzzleEmbed(interaction, puzzleInfo, puzzleName, date) {
  * @param {*} interaction
  * @param {*} publisher
  * @param {*} datestring
- * @returns
  */
 async function sendPuzzle(interaction, publisher, datestring = null) {
 	const date = getPuzzleDate(datestring);
@@ -174,8 +173,13 @@ async function sendPuzzle(interaction, publisher, datestring = null) {
 		return;
 	}
 
-	// delete button messages, reply to non-button interactions
-	if (interaction.message) {
+	// this function can be called from clicking a button on either a message from puzzle.js 
+	// or from a completed puzzle, 
+	// or can be from a start.js message (such that there is no message to reply to)
+	
+	// if message is from puzzle.js (has embed with no title), delete the original
+	// TODO this condition is jank
+	if (interaction.message && !(interaction.message.embeds[0].title)) {
 		await interaction.channel.send({
 			embeds: [puzzleEmbed],
 		});
@@ -185,6 +189,14 @@ async function sendPuzzle(interaction, publisher, datestring = null) {
 		await interaction.reply({
 			embeds: [puzzleEmbed],
 		});
+
+		await interaction.message.edit({
+			components: [],
+		})
+
+		await interaction.message.reactions.removeAll().catch(
+			(error) => console.error('Failed to clear reactions:', error)
+		); 
 	}
 }
 
