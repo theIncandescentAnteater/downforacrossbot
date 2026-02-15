@@ -10,7 +10,7 @@ discord bot that sends crosswithfriends crossword puzzle links :)
 ### Install Dependencies
 Install dependencies using `uv`:
 ```bash
-uv sync
+bun install
 ```
 
 ### config.json file 
@@ -19,7 +19,7 @@ Containing:
 
 ### Run the Bot
 ```bash
-node .
+bun .
 ```
 
 ## Running with Docker
