@@ -9,32 +9,32 @@ const SITE_URL = "crosswithfriends.com";
  * @returns {json} json of first puzzle from cwf search given search criteria
  */
 async function getFirstMatchingPuzzle(
-	searchTerm = "",
-	standardSize = "true",
-	miniSize = "true"
+  searchTerm = "",
+  standardSize = "true",
+  miniSize = "true",
 ) {
-	const url = `https://${API_URL}/api/puzzle_list?page=0&pageSize=1&filter[nameOrTitleFilter]=${searchTerm}&filter[sizeFilter][Mini]=${miniSize}&filter[sizeFilter][Standard]=${standardSize}`;
+  const url = `https://${API_URL}/api/puzzle_list?page=0&pageSize=1&filter[nameOrTitleFilter]=${searchTerm}&filter[sizeFilter][Mini]=${miniSize}&filter[sizeFilter][Standard]=${standardSize}`;
 
-	try {
-		// get the response from api
-		const response = await fetch(url);
-		if (!response.ok) {
-			throw new Error(`Response status: ${response.status}`);
-		}
+  try {
+    // get the response from api
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
 
-		const json = await response.json();
+    const json = await response.json();
 
-		let puzzles = null;
+    let puzzle = null;
 
-		// get puzzles from response
-		if (json.puzzles.length != 0) {
-			puzzles = json.puzzles;
-		}
+    // get puzzles from response
+    if (json.puzzles.length != 0) {
+      puzzle = json.puzzles[0];
+    }
 
-		return puzzles[0];
-	} catch (error) {
-		console.error(error.message);
-	}
+    return puzzle;
+  } catch (error) {
+    console.error(error.message);
+  }
 }
 
 /**
@@ -43,25 +43,25 @@ async function getFirstMatchingPuzzle(
  * @returns link to new game instance of given puzzle
  */
 async function makeGame(puzzleJSON) {
-	const gameID = await getGID();
-	const puzzleID = puzzleJSON.pid;
+  const gameID = await getGID();
+  const puzzleID = puzzleJSON.pid;
 
-	const response = await fetch(`https://${API_URL}/api/game`, {
-		method: "POST",
-		body: JSON.stringify({
-			gid: gameID,
-			pid: puzzleID,
-		}),
-		headers: {
-			"Content-type": "application/json",
-		},
-	});
+  const response = await fetch(`https://${API_URL}/api/game`, {
+    method: "POST",
+    body: JSON.stringify({
+      gid: gameID,
+      pid: puzzleID,
+    }),
+    headers: {
+      "Content-type": "application/json",
+    },
+  });
 
-	if (!response.ok) {
-		throw new Error(`Response status: ${response.status}`);
-	}
+  if (!response.ok) {
+    throw new Error(`Response status: ${response.status}`);
+  }
 
-	return `https://${SITE_URL}/beta/game/${gameID}`;
+  return `https://${SITE_URL}/beta/game/${gameID}`;
 }
 
 /**
@@ -69,16 +69,16 @@ async function makeGame(puzzleJSON) {
  * @returns next game id from api counter
  */
 async function getGID() {
-	const response = await fetch(`https://${API_URL}/api/counters/gid`, {
-		method: "POST",
-	});
-	if (!response.ok) {
-		throw new Error(`Response status: ${response.status}`);
-	}
+  const response = await fetch(`https://${API_URL}/api/counters/gid`, {
+    method: "POST",
+  });
+  if (!response.ok) {
+    throw new Error(`Response status: ${response.status}`);
+  }
 
-	const json = await response.json();
+  const json = await response.json();
 
-	return json["gid"];
+  return json["gid"];
 }
 
 module.exports = { getFirstMatchingPuzzle, makeGame };
