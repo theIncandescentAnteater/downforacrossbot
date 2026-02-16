@@ -57,7 +57,13 @@ export async function buttonActions(
           content: "Unknown button. Please try again.",
           flags: MessageFlags.Ephemeral,
         })
-        .catch(() => {});
+        .catch((err) =>
+          console.error("Failed to send unknown button reply", {
+            err,
+            buttonID,
+            interactionId: interaction.id,
+          })
+        );
     }
   }
 }

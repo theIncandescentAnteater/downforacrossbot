@@ -21,9 +21,9 @@ interface PuzzleListResponse {
 function isPuzzleInfo(x: unknown): x is PuzzleInfo {
   if (typeof x !== "object" || x === null) return false;
   if (!("pid" in x) || typeof (x as PuzzleInfo).pid !== "number") return false;
+  if (!("content" in x)) return false;
   const content = (x as PuzzleInfo).content;
-  if (!("content" in x) || typeof content !== "object" || content === null)
-    return false;
+  if (typeof content !== "object" || content === null) return false;
   if (
     !("info" in content) ||
     typeof content.info !== "object" ||

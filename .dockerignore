@@ -16,3 +16,7 @@ __pycache__
 **/__tests__
 **/*.spec.ts
 **/*.test.js
+test
+docs
+Dockerfile
+.dockerignore
