@@ -1,40 +1,18 @@
-# Virtual environments
-.venv/
-venv/
-ENV/
-env/
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Logs
-*.log
-discord.log
-
-# Git
-.git/
+node_modules
+dist
+.git
 .gitignore
-
-# Documentation
-README.md
+*.log
+.env
+.env.*
+.vscode
+.idea
 *.md
-
-# Docker
-Dockerfile
-.dockerignore
-
-# Assets (if not needed in container)
-/assets
-
-# OS
-.DS_Store
-Thumbs.db
+coverage
+.nyc_output
+__pycache__
+*.pyc
+*.test.ts
+**/__tests__
+**/*.spec.ts
+**/*.test.js

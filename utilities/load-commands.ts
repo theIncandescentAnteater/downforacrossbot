@@ -8,9 +8,10 @@ import type { Command } from "../types/command";
  */
 export function loadCommandModules(dir: string): Command[] {
   const commands: Command[] = [];
-  const files = fs
-    .readdirSync(dir)
-    .filter((file) => file.endsWith(".js"));
+  if (!fs.existsSync(dir)) {
+    throw new Error(`Commands directory does not exist: ${dir}`);
+  }
+  const files = fs.readdirSync(dir).filter((file) => file.endsWith(".js"));
 
   for (const file of files) {
     const filePath = path.join(dir, file);

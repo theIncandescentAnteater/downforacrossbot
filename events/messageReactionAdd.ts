@@ -31,9 +31,13 @@ export async function execute(
         text: "🎉 Solved! Play another?",
       });
 
-    await reaction.message.edit({
-      embeds: [completedEmbed],
-      components: [publisherButtons],
-    });
+    await reaction.message
+      .edit({
+        embeds: [completedEmbed],
+        components: [publisherButtons],
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to edit message:", reaction.message.id, error);
+      });
   }
 }

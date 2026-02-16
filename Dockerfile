@@ -15,14 +15,7 @@ FROM oven/bun:1 AS build
 WORKDIR /usr/src/app
 
 COPY --from=install /temp/dev/node_modules node_modules
-COPY package.json bun.lock ./
-COPY tsconfig.json ./
-COPY types/ types/
-COPY constants/ constants/
-COPY index.ts deploy-commands.ts ./
-COPY commands/ commands/
-COPY events/ events/
-COPY utilities/ utilities/
+COPY . .
 
 ENV NODE_ENV=production
 RUN bun run build

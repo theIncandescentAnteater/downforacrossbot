@@ -18,6 +18,17 @@ export function loadConfig(): Config {
   const raw = fs.readFileSync(pathToLoad, "utf-8");
   const file = JSON.parse(raw) as Config;
   const token = process.env.DISCORD_TOKEN ?? file.token;
+  const missing: string[] = [];
+  if (token === undefined || token === "") missing.push("token");
+  if (file.clientId === undefined || file.clientId === "")
+    missing.push("clientId");
+  if (file.guildId === undefined || file.guildId === "")
+    missing.push("guildId");
+  if (missing.length > 0) {
+    throw new Error(
+      `Config missing required fields: ${missing.join(", ")}. Set DISCORD_TOKEN or config.json token; set clientId and guildId in config.json.`
+    );
+  }
   return {
     token,
     clientId: file.clientId,

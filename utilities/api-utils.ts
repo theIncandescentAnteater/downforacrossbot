@@ -19,14 +19,19 @@ interface PuzzleListResponse {
 }
 
 function isPuzzleInfo(x: unknown): x is PuzzleInfo {
-  return (
-    typeof x === "object" &&
-    x !== null &&
-    "pid" in x &&
-    typeof (x as PuzzleInfo).pid === "number" &&
-    "content" in x &&
-    typeof (x as PuzzleInfo).content === "object"
-  );
+  if (typeof x !== "object" || x === null) return false;
+  if (!("pid" in x) || typeof (x as PuzzleInfo).pid !== "number") return false;
+  const content = (x as PuzzleInfo).content;
+  if (!("content" in x) || typeof content !== "object" || content === null)
+    return false;
+  if (
+    !("info" in content) ||
+    typeof content.info !== "object" ||
+    content.info === null
+  )
+    return false;
+  const info = content.info;
+  return typeof info.title === "string" && typeof info.author === "string";
 }
 
 /**

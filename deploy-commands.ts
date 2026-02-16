@@ -26,5 +26,6 @@ const rest = new REST().setToken(config.token);
     );
   } catch (error) {
     console.error(error);
+    process.exit(1);
   }
 })();

@@ -11,9 +11,7 @@ export const data = new SlashCommandBuilder()
       .setName("publisher")
       .setDescription("the publisher that puzzle came from")
       .setRequired(true)
-      .addChoices(
-        ...PUBLISHERS.map((p) => ({ name: p.label, value: p.id }))
-      )
+      .addChoices(...PUBLISHERS.map((p) => ({ name: p.label, value: p.id })))
   )
   .addStringOption((date) =>
     date.setName("date").setDescription("the date the puzzle was published")

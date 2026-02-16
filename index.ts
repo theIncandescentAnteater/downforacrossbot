@@ -32,6 +32,15 @@ for (const file of eventFiles) {
   const filePath = path.join(eventsPath, file);
   // eslint-disable-next-line @typescript-eslint/no-require-imports -- dynamic load
   const event = require(filePath) as Event;
+  const hasName = typeof event.name === "string" && event.name.length > 0;
+  const hasExecute = typeof event.execute === "function";
+  const onceValid = event.once === undefined || typeof event.once === "boolean";
+  if (!hasName || !hasExecute || !onceValid) {
+    console.warn(
+      `[events] Skipping ${filePath}: invalid event (name, execute, or once).`
+    );
+    continue;
+  }
   if (event.once) {
     client.once(event.name, (...args: unknown[]) => event.execute(...args));
   } else {
@@ -39,4 +48,7 @@ for (const file of eventFiles) {
   }
 }
 
-client.login(config.token);
+client.login(config.token).catch((error: unknown) => {
+  console.error("Login failed:", error);
+  process.exit(1);
+});

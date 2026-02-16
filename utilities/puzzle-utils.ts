@@ -54,8 +54,7 @@ export async function getPuzzleName(
   try {
     if (!date) {
       await interaction.reply({
-        content:
-          "i don't know how to interpret that date. try m/d or m/d/yy",
+        content: "i don't know how to interpret that date. try m/d or m/d/yy",
         flags: MessageFlags.Ephemeral,
       });
       return undefined;
@@ -125,7 +124,19 @@ export async function sendPuzzle(
     return;
   }
 
-  const gameLink = await makeGame(puzzleInfo);
+  let gameLink: string;
+  try {
+    gameLink = await makeGame(puzzleInfo);
+  } catch (error) {
+    console.error("makeGame failed:", error);
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content: "Something went wrong creating the game. Try again later.",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    return;
+  }
   const puzzleEmbed = buildPuzzleEmbed(puzzleInfo, gameLink);
 
   const msg = "message" in interaction ? interaction.message : null;
@@ -141,7 +152,11 @@ export async function sendPuzzle(
       embeds: [puzzleEmbed],
     });
     if (msg) {
-      await msg.edit({ components: [] });
+      await msg
+        .edit({ components: [] })
+        .catch((error: unknown) =>
+          console.error("Failed to edit message:", error)
+        );
       await msg.reactions
         .removeAll()
         .catch((error: unknown) =>

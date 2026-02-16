@@ -1,11 +1,12 @@
 import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { publisherButtons } from "../utilities/buttons";
-import { EMBED_COLOR_SELECT, PUZZLE_MESSAGE_DELETE_MS } from "../constants/embed-colors";
+import {
+  EMBED_COLOR_SELECT,
+  PUZZLE_MESSAGE_DELETE_MS,
+} from "../constants/embed-colors";
 
-function isDiscordApiError(
-  error: unknown
-): error is { code: number } {
+function isDiscordApiError(error: unknown): error is { code: number } {
   return (
     typeof error === "object" &&
     error !== null &&

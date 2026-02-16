@@ -30,8 +30,8 @@ export function getPuzzleNameFormat(
 ): string {
   const d = String(date.getDate());
   const dd = d.padStart(2, "0");
-  const month = date.toLocaleString("default", { month: "long" });
-  const monthShort = date.toLocaleString("default", { month: "short" });
+  const month = date.toLocaleString("en-US", { month: "long" });
+  const monthShort = date.toLocaleString("en-US", { month: "short" });
   const yyyy = date.getFullYear();
   const weekdays = [
     "Sunday",
@@ -42,7 +42,7 @@ export function getPuzzleNameFormat(
     "Friday",
     "Saturday",
   ];
-  const weekdaysShort = ["Sun", "Mon", "Tues", "Wed", "Thu", "Fri", "Sat"];
+  const weekdaysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const weekday = weekdays[date.getDay()];
   const weekdayShort = weekdaysShort[date.getDay()];
 
