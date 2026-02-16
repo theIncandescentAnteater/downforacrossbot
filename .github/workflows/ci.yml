@@ -67,7 +67,7 @@ jobs:
 
   build-docker:
     name: Build and Push Docker Image (PR)
-    needs: [lint, format-check, dependency-scan]
+    needs: [lint, format-check]
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/docker-build.yml
     with:
