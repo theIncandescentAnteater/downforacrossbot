@@ -4,3 +4,4 @@ discord.log*
 __pycache__
 /assets
 /node_modules
+/dist
