@@ -38,14 +38,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Install uv and set the Python version
-        uses: astral-sh/setup-uv@v7
-        with:
-          python-version: "3.14"
-          enable-cache: true
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: uv sync --locked --all-extras --dev
+        run: bun install
 
       - name: Scan dependencies for vulnerabilities
         uses: aquasecurity/trivy-action@0.33.1
@@ -75,17 +72,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Install uv and set the Python version
-        uses: astral-sh/setup-uv@v7
-        with:
-          python-version: "3.14"
-          enable-cache: true
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: uv sync --locked --all-extras --dev
+        run: bun install
 
-      - name: Run Ruff (linting)
-        run: uv run ruff check --output-format github .
+      - name: Eslint (linting)
+        run: bun run lint .
 
   format-check:
     name: Format Check
@@ -97,43 +91,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Install uv and set the Python version
-        uses: astral-sh/setup-uv@v7
-        with:
-          python-version: "3.14"
-          enable-cache: true
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: uv sync --locked --all-extras --dev
+        run: bun install
 
-      - name: Run Ruff (format check)
-        run: uv run ruff format --output-format github --check .
-
-  type-check:
-    name: Type Check
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Install uv and set the Python version
-        uses: astral-sh/setup-uv@v7
-        with:
-          python-version: "3.14"
-          enable-cache: true
-
-      - name: Install dependencies
-        run: uv sync --locked --all-extras --dev
-
-      - name: Run type check
-        run: uv run ty check --output-format github .
+      - name: Prettier (format check)
+        run: bun run format
 
   build-docker:
     name: Build and Push Docker Image (PR)
-    needs: [lint, format-check, type-check, dependency-scan]
+    needs: [lint, format-check, dependency-scan]
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/docker-build.yml
     with:
