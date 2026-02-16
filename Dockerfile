@@ -1,37 +1,41 @@
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1 AS base
+# Install stage: cache dependencies in temp dir for faster rebuilds
+FROM oven/bun:1 AS install
 WORKDIR /usr/src/app
 
-# install dependencies into temp directory
-# this will cache them and speed up future builds
-FROM base AS install
 RUN mkdir -p /temp/dev
 COPY package.json bun.lock /temp/dev/
 RUN cd /temp/dev && bun install --frozen-lockfile
 
-# install with --production (exclude devDependencies)
 RUN mkdir -p /temp/prod
 COPY package.json bun.lock /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production
 
-# copy node_modules from temp directory
-# then copy all (non-ignored) project files into the image
-FROM base AS prerelease
+# Build stage: compile TypeScript
+FROM oven/bun:1 AS build
+WORKDIR /usr/src/app
+
 COPY --from=install /temp/dev/node_modules node_modules
-COPY . .
+COPY package.json bun.lock ./
+COPY tsconfig.json ./
+COPY types/ types/
+COPY constants/ constants/
+COPY index.ts deploy-commands.ts ./
+COPY commands/ commands/
+COPY events/ events/
+COPY utilities/ utilities/
 
-# [optional] tests & build
 ENV NODE_ENV=production
-# RUN bun test
-# RUN bun run build
+RUN bun run build
 
-# copy production dependencies and source code into final image
-FROM base AS release
+# Production stage: minimal image with prod deps and dist only
+FROM oven/bun:1-slim AS release
+WORKDIR /usr/src/app
+
+ENV NODE_ENV=production
+
 COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/index.js .
-COPY --from=prerelease /usr/src/app/package.json .
+COPY package.json bun.lock ./
+COPY --from=build /usr/src/app/dist ./dist
 
-# run the app
 USER bun
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+ENTRYPOINT ["bun", "dist/index.js"]
