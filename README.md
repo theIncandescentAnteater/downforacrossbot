@@ -2,23 +2,24 @@
 discord bot that sends crosswithfriends crossword puzzle links :)
 
 ## Commands
-- puzzle (publisher, date [optional])
+- puzzle
+- start (publisher, date [optional])
 
 ## To Run Locally
 
 ### Install Dependencies
-Install dependencies using `uv`:
+Install dependencies using `bun`:
 ```bash
-uv sync
+bun install
 ```
 
-### .env file 
+### config.json file 
 Containing:
-- `DISCORD_TOKEN`, the bot token
+- `token`, the bot token
 
 ### Run the Bot
 ```bash
-uv run python main.py
+bun .
 ```
 
 ## Running with Docker
@@ -34,10 +35,6 @@ Pass the Discord token as an environment variable:
 docker run -p 8080:8080 -e DISCORD_TOKEN=your_token_here downforacrossbot
 ```
 
-Or use an environment file:
-```bash
-docker run -p 8080:8080 --env-file .env downforacrossbot
-```
 
 The container runs both the FastAPI web server (on port 8080) and the Discord bot. The FastAPI server provides:
 - Root endpoint: `http://localhost:8080/` - Status check
