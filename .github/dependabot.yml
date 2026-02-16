@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Enable version updates for Python dependencies
+  # Enable version updates for JS dependencies
   - package-ecosystem: "bun"
     directory: "/"
     schedule:

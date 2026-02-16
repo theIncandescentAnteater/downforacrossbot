@@ -86,7 +86,7 @@ jobs:
           IMAGE_REF="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}"
           echo "Testing pushed image: $IMAGE_REF"
           docker pull "$IMAGE_REF"
-          docker run --rm --entrypoint sh "$IMAGE_REF" -c "python --version && uv --version && ls -la /app/*.py"
+          docker run --rm --entrypoint sh "$IMAGE_REF" -c
 
       - name: Image digest
         run: |
