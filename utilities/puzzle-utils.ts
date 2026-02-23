@@ -4,13 +4,54 @@ import type { ButtonInteraction } from "discord.js";
 import type { TextChannel } from "discord.js";
 import { getFirstMatchingPuzzle, makeGame } from "./api-utils";
 import type { PuzzleInfo } from "./api-utils";
-import { getPuzzleNameFormat } from "../constants/publishers";
 import type { PublisherId } from "../constants/publishers";
 import { EMBED_COLOR_PUZZLE } from "../constants/embed-colors";
 
 type PuzzleInteraction = ChatInputCommandInteraction | ButtonInteraction;
 
 const MAX_DATE_STRING_LENGTH = 100;
+
+export function getPuzzleNameFormat(
+  publisherId: PublisherId,
+  date: Date
+): string {
+  const d = String(date.getDate());
+  const dd = d.padStart(2, "0");
+  const month = date.toLocaleString("en-US", { month: "long" });
+  const monthShort = date.toLocaleString("en-US", { month: "short" });
+  const yyyy = date.getFullYear();
+  const weekdays = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const weekdaysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weekday = weekdays[date.getDay()];
+  const weekdayShort = weekdaysShort[date.getDay()];
+
+  switch (publisherId) {
+    case "nyt":
+      return `NY Times, ${weekday}, ${month} ${d}, ${yyyy}`;
+    case "lat":
+      return `LA Times, ${weekdayShort}, ${monthShort} ${d}, ${yyyy}`;
+    case "usa":
+      return `USA Today ${weekday}, ${monthShort} ${dd}, ${yyyy}`;
+    case "wsj":
+      return `WSJ ${weekday}, ${monthShort} ${dd}, ${yyyy}`;
+    case "newsday":
+      return `Newsday ${weekday}, ${monthShort} ${dd}, ${yyyy}`;
+    case "universal":
+      return `Universal Crossword ${weekday}`;
+    case "new yorker":
+      return `New Yorker ${weekday}, ${monthShort} ${dd}, ${yyyy}`;
+    default:
+      return "";
+  }
+}
 
 export function getPuzzleDate(datestring: string | null): Date | null {
   try {
