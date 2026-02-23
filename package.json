@@ -5,16 +5,24 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/node": "^22.10.1",
     "eslint": "^10.0.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^17.3.0",
-    "prettier": "3.8.1"
+    "prettier": "3.8.1",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.18.0"
   },
   "scripts": {
+    "build": "tsc",
+    "start": "bun dist/index.js",
+    "deploy-commands": "bun dist/deploy-commands.js",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "lint": "eslint *.js ."
+    "format:check": "prettier --check .",
+    "lint": "eslint ."
   }
 }
